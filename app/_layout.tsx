@@ -1,29 +1,100 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from "@/constants/Colors";
+import { MFThemeProvider } from "@/context/ThemeContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import SplashScreen from "@/view/splashScreen";
+import { useFonts } from "expo-font";
+import { Stack, useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const colorScheme = useColorScheme();
+  const router = useRouter();
+  const [token, setToken] = useState<string | null>(),
+    [theme, setTheme] = useState<string | null>(),
+    [themeColors, setThemeColors] = useState<any>(),
+    [hasRedirected, setHasRedirected] = useState(false),
+    [isReady, setIsReady] = useState(false);
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  async function getToken() {
+    try {
+      const token = await SecureStore.getItemAsync("userToken");
+      return token;
+    } catch (error) {
+      console.error("Erro ao recuperar token:", error);
+      return null;
+    }
+  }
+
+  async function getTheme() {
+    try {
+      const theme = await SecureStore.getItemAsync("theme");
+      return theme;
+    } catch (error) {
+      console.error("Erro ao recuperar theme:", error);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    const prepare = async () => {
+      try {
+        const storedToken = await getToken();
+        const storedTheme = await getTheme();
+        setToken(storedToken);
+        setTheme(storedTheme);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (!loaded || !isReady || hasRedirected) return;
+
+    setHasRedirected(true);
+
+    if (token) {
+      router.replace("/(tabs)/training");
+    } else {
+      router.replace("/(auth)");
+    }
+  }, [loaded, isReady, token]);
+
+  useEffect(() => {
+    const selectedTheme = (theme ??
+      colorScheme ??
+      "light") as keyof typeof Colors;
+    setThemeColors(Colors[selectedTheme]);
+  }, [theme, colorScheme]);
+
+  if (!isReady || !loaded) {
+    return <SplashScreen></SplashScreen>;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        height: "100%",
+        backgroundColor: colorScheme === "dark" ? "#111111" : "#dddddd",
+      }}
+    >
+      <MFThemeProvider colorScheme={theme ? theme : colorScheme}>
+        <Stack screenOptions={{ headerShown: false }} />
+        <StatusBar style="auto" />
+        <Toast />
+      </MFThemeProvider>
+    </SafeAreaView>
   );
 }

@@ -4,10 +4,15 @@
     "slug": "my-fit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/my-fit/icon-mfc.png",
     "scheme": "myfit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/my-fit/logo-fundo-vermelho.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF3131"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -33,10 +38,18 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a1a12f72-3e74-4ecc-bece-c6c8fc88d81e"
+      }
+    },
+    "owner": "rafaopp"
   }
 }
