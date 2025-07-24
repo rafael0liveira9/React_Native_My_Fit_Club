@@ -1,3 +1,4 @@
+
 export const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
 export const cellPhoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
 export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$/;
@@ -14,11 +15,11 @@ export const MFObjetives = [
   { label: "Curiosidade", value: "Curiosidade" },
 ]
 export const MFGenders = [
-                { label: "Masculino", value: "Masculino" },
-                { label: "Feminino", value: "Feminino" },
+                { label: "Masculino", value: "1" },
+                { label: "Feminino", value: "2" },
                 {
                   label: "Prefiro não identificar",
-                  value: "Prefiro não identificar",
+                  value: "3",
                 },
 ]
 
@@ -120,5 +121,64 @@ export function phoneFormat(value: string) {
 }
 }
 
+export function getRepetitionsFormat(array: string[]) {
+
+  if (array && Array.isArray(array)) {
+      const allEqual = array.every((item) => item === array[0]);
+
+    if (allEqual) {
+      return array[0];
+    }
+
+    return array.join(', ');
+  }
+
+}
+
+export function getLevel({ level }: { level: number }) {
+  switch (level) {
+    case 1 :
+      return {name:'FÁCIL', BCcolor:'#1E9732FF', FColor: '#ffffff'}
+    case 2:
+      return {name:'MODERADO', BCcolor:'#B8B01FFF', FColor: '#ffffff'}
+    case 3:
+      return {name:'DIFICIL', BCcolor:'#B02020FF', FColor: '#ffffff'}
+    case 4:
+      return {name:'PROFISSIONAL', BCcolor:'#000000', FColor: '#ffffff'}
   
-  
+    default:
+      break;
+  }
+}
+
+export function formatTimeAgo(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMs / 3600000);
+  const days = Math.floor(diffMs / 86400000);
+
+  if (minutes < 1) {
+    return "agora";
+  } else if (minutes === 1) {
+    return "há 1m";
+  } else if (minutes < 60) {
+    return `há ${minutes}m`;
+  } else if (hours === 1) {
+    return "há 1h";
+  } else if (hours < 24) {
+    return `há ${hours}h`;
+  } else if (days === 1) {
+    return "há 1d";
+  } else if (days === 2) {
+    return "há 2d";
+  } else {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  }
+}

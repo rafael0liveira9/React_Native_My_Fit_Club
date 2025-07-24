@@ -15,12 +15,14 @@ interface Props extends ViewProps {
   themeColors?: any;
   align?: string;
   info?: string;
+  isPrimary?: boolean;
 }
 
 export default function MFStackEditSubtitle({
   title,
   themeColors,
   align,
+  isPrimary,
   info,
 }: Props) {
   const [showTip, setShowTip] = useState(false);
@@ -41,7 +43,11 @@ export default function MFStackEditSubtitle({
       >
         <TouchableOpacity onPress={() => setShowTip(true)}>
           <Text
-            style={{ fontSize: 18, color: themeColors.text, fontWeight: 700 }}
+            style={{
+              fontSize: 24,
+              color: isPrimary ? themeColors.primary : themeColors.text,
+              fontWeight: 700,
+            }}
           >
             {title}
             {"  "}
@@ -71,6 +77,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
     paddingHorizontal: 10,
-    paddingVertical: 10,
   },
 });

@@ -1,26 +1,37 @@
+import { getFaq } from "@/service/general";
 import { getMyData } from "@/service/user";
 import { globalStyles } from "@/styles/global";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import HeaderPopUp from "./headerInfoPop";
-import { MFLogoutModal } from "./modal";
+import { MFDefaultModal, MFLogoutModal } from "./modal";
 
 export default function MFMainHeader({
   themeColors,
   theme,
   toggleTheme,
+  isOpen,
+  setIsOpen,
 }: {
   themeColors: any;
   theme: string;
   toggleTheme: () => void;
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
 }) {
   const [isLoading, setIsLoading] = useState<boolean>(false),
     [user, setUser] = useState<any>(),
-    [warningVisible, setWarningVisible] = useState<boolean>(false),
-    [isOpen, setIsOpen] = useState<boolean>(false);
+    [faq, setFaq] = useState<any>(),
+    [warningVisible, setWarningVisible] = useState<boolean>(false);
 
   async function getUserData() {
     setIsLoading(true);
@@ -30,6 +41,9 @@ export default function MFMainHeader({
 
       if (y && z) {
         const data: any = await getMyData({ token: z });
+        const gettheFaq: any = await getFaq();
+
+        setFaq(gettheFaq);
 
         if (!!data) {
           setUser({
@@ -75,19 +89,6 @@ export default function MFMainHeader({
   function onOpenWarning() {
     setWarningVisible(true);
   }
-  function getIcon() {
-    switch (isOpen) {
-      case true:
-        return (
-          <AntDesign name="closecircle" size={45} color={themeColors.white} />
-        );
-
-      default:
-        return (
-          <AntDesign name="infocirlce" size={28} color={themeColors.white} />
-        );
-    }
-  }
 
   useEffect(() => {
     getUserData();
@@ -107,29 +108,98 @@ export default function MFMainHeader({
           isLoading={isLoading}
         ></MFLogoutModal>
       )}
+      <TouchableOpacity
+        onPress={(e: any) => {
+          e.stopPropagation();
+          onOpenChange();
+        }}
+      >
+        {isOpen ? (
+          <AntDesign name="menu-unfold" size={28} color={themeColors?.white} />
+        ) : (
+          <AntDesign name="menu-fold" size={28} color={themeColors?.white} />
+        )}
+      </TouchableOpacity>
       <View style={globalStyles.headerImageBox}>
         <Image
           style={globalStyles.headerLogo}
-          source={require("@/assets/images/my-fit/logo-fundo-vermelho.png")}
+          source={require("@/assets/images/my-fit/logo/my_fit_club_h_b.png")}
         />
       </View>
       {isOpen && (
-        <HeaderPopUp
-          globalStyles={globalStyles}
+        <MFDefaultModal
           themeColors={themeColors}
-          theme={theme}
-          toggleTheme={toggleTheme}
-          user={user}
-          isLoading={isLoading}
-          onOpenChange={onOpenWarning}
-          onOpenWarning={onOpenWarning}
-        ></HeaderPopUp>
+          close={() => setIsOpen(false)}
+          warningVisible={isOpen}
+        >
+          <HeaderPopUp
+            globalStyles={globalStyles}
+            themeColors={themeColors}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            user={user}
+            isLoading={isLoading}
+            onOpenChange={onOpenWarning}
+            onOpenWarning={onOpenWarning}
+            faq={faq}
+          ></HeaderPopUp>
+        </MFDefaultModal>
       )}
       <TouchableOpacity
-        onPress={onOpenChange}
+        onPress={() => router.push("/(stack)/profile/page")}
         style={[globalStyles.headerThemeBtn, { zIndex: 10 }]}
       >
-        {getIcon()}
+        {user?.photo ? (
+          <Image
+            style={
+              (globalStyles.flexr,
+              {
+                width: 40,
+                height: 40,
+                borderRadius: 40,
+                borderWidth: 1,
+                borderColor: themeColors.white,
+              })
+            }
+            source={{ uri: user?.photo }}
+          />
+        ) : (
+          <View
+            style={[
+              globalStyles.flexr,
+              {
+                width: 40,
+                height: 40,
+                borderRadius: 40,
+                borderWidth: 2,
+                borderColor: themeColors.white,
+                backgroundColor: themeColors.white,
+              },
+            ]}
+          >
+            {isLoading ? (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator size={20} color={themeColors.white} />
+              </View>
+            ) : (
+              <Text
+                style={{
+                  fontSize: 17,
+                  color: themeColors.themeGrey,
+                  fontWeight: 900,
+                }}
+              >
+                {user?.name?.charAt(0).toUpperCase() ?? "?"}
+              </Text>
+            )}
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );

@@ -1,9 +1,24 @@
-import Entypo from "@expo/vector-icons/Entypo";
-import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { ActivityIndicator, Image, Text, View } from "react-native";
-import { MFPrimaryButton, MFThemeChangeButton } from "./buttons";
+import {
+  AntDesign,
+  Entypo,
+  Feather,
+  FontAwesome,
+  Octicons,
+} from "@expo/vector-icons";
+import Constants from "expo-constants";
+import { useState } from "react";
+import {
+  Linking,
+  Pressable,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import { MFDefaultCard } from "./cards";
+import MFStackEditSubtitle from "./stackEditSubtitle";
 
 export default function HeaderPopUp({
   globalStyles,
@@ -14,9 +29,11 @@ export default function HeaderPopUp({
   isLoading,
   onOpenChange,
   onOpenWarning,
+  faq,
 }: {
   globalStyles: any;
   themeColors: any;
+  faq: any;
   theme: string;
   toggleTheme: () => void;
   onOpenChange: () => void;
@@ -24,90 +41,275 @@ export default function HeaderPopUp({
   user: any;
   isLoading: boolean;
 }) {
+  const [opennedFaq, setOppenedFaq] = useState<number | null>(null),
+    appName = Constants.expoConfig?.name,
+    appVersion = Constants.expoConfig?.version,
+    appVersionStatus = "alfa",
+    createdBy = "BAY Digital Services",
+    createdByUrl = "https://www.linkedin.com/in/rafael-oliveira-18934a160/";
+
   return (
     <View style={globalStyles.headerInfoBox}>
-      <MFDefaultCard themeColors={themeColors}>
-        <View style={globalStyles.themeBtnBox}>
-          <MFThemeChangeButton
-            title=""
-            type={theme === "dark" ? "left" : "right"}
-            color={theme === "dark" ? themeColors.info : themeColors.warning}
-            icon={
-              theme === "dark" ? (
-                <Entypo name="moon" size={18} color={themeColors.text} />
-              ) : (
-                <Feather
-                  name="sun"
-                  size={18}
-                  color={themeColors.texSecondary}
-                />
-              )
-            }
-            onPress={toggleTheme}
-          ></MFThemeChangeButton>
-        </View>
-        <View style={globalStyles.headerInfoPhoto}>
-          {user?.photo ? (
-            <Image
-              source={{ uri: user?.photo }}
-              style={[
-                globalStyles.headerPhoto,
-                {
-                  backgroundColor: themeColors.primaryContrast,
-                  borderWidth: 3,
-                  borderColor: themeColors.text,
-                },
-              ]}
-            />
-          ) : (
-            <View
-              style={[
-                globalStyles.headerPhoto,
-                { backgroundColor: themeColors.primaryContrast },
-              ]}
+      <TouchableWithoutFeedback>
+        <MFDefaultCard themeColors={themeColors}>
+          <View style={{ width: "100%", height: "100%" }}>
+            <ScrollView
+              style={{
+                flex: 1,
+                padding: 10,
+              }}
             >
-              {isLoading ? (
+              <View
+                style={[
+                  globalStyles.flexc,
+                  { marginBottom: 20, width: "100%", alignItems: "flex-end" },
+                ]}
+              >
+                <Text
+                  style={[
+                    globalStyles.title,
+                    { color: themeColors.text, fontSize: 30, fontWeight: 600 },
+                  ]}
+                >
+                  Olá, {user.name}!
+                </Text>
+                <Text style={{ color: themeColors.textSecondary }}>
+                  {user?.email}
+                </Text>
+              </View>
+
+              <View style={{ marginVertical: 10 }}>
+                <MFStackEditSubtitle
+                  themeColors={themeColors}
+                  title="Sobre o app"
+                  align="left"
+                  info="Informações sobre o aplicativo."
+                ></MFStackEditSubtitle>
                 <View
                   style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
+                    paddingLeft: 20,
+                    marginTop: 10,
+                    gap: 10,
                   }}
                 >
-                  <ActivityIndicator size={20} color={themeColors.primary} />
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(createdByUrl)}
+                    style={[
+                      globalStyles.flexr,
+                      { gap: 20, justifyContent: "flex-start" },
+                    ]}
+                  >
+                    <Feather name="link" size={16} color={themeColors.text} />
+                    <Text
+                      style={{
+                        color: themeColors.info,
+                        fontSize: 16,
+                        textDecorationLine: "underline",
+                        textDecorationStyle: "solid",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "900",
+                          color: themeColors.text,
+                          textDecorationLine: "none",
+                          textDecorationStyle: "solid",
+                        }}
+                      >
+                        Criado por:{" "}
+                      </Text>
+                      {"  "}
+                      {createdBy}
+                      {"  "}
+                    </Text>
+                  </TouchableOpacity>
+                  <View
+                    style={[
+                      globalStyles.flexr,
+                      { gap: 20, justifyContent: "flex-start" },
+                    ]}
+                  >
+                    <Feather
+                      name="smartphone"
+                      size={16}
+                      color={themeColors.text}
+                    />
+                    <Text style={{ color: themeColors.text, fontSize: 16 }}>
+                      <Text style={{ fontWeight: 900 }}>Nome: </Text> {appName}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      globalStyles.flexr,
+                      { gap: 20, justifyContent: "flex-start" },
+                    ]}
+                  >
+                    <Octicons
+                      style={{ paddingLeft: 3 }}
+                      name="number"
+                      size={16}
+                      color={themeColors.text}
+                    />
+                    <Text style={{ color: themeColors.text, fontSize: 16 }}>
+                      <Text style={{ fontWeight: 900 }}>Versão: </Text>{" "}
+                      {appVersionStatus} {appVersion}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={toggleTheme}
+                    style={[
+                      globalStyles.flexr,
+                      { gap: 20, justifyContent: "flex-start" },
+                    ]}
+                  >
+                    {theme === "dark" ? (
+                      <Entypo name="moon" size={16} color={themeColors.text} />
+                    ) : (
+                      <Feather name="sun" size={16} color={themeColors.text} />
+                    )}
+                    <Text style={{ color: themeColors.text }}>
+                      <Text style={{ fontWeight: 900 }}>Tema:</Text>
+                      {"  "}
+                      {theme === "dark" ? "Escuro" : "Claro"}
+                    </Text>
+                    <Switch
+                      style={{ height: 16 }}
+                      value={theme === "dark"}
+                      onValueChange={toggleTheme}
+                      trackColor={{ false: "#ccc", true: "#999" }}
+                      thumbColor={
+                        theme === "dark"
+                          ? themeColors.text
+                          : themeColors.primary
+                      }
+                    />
+                  </TouchableOpacity>
                 </View>
-              ) : (
-                <Text style={{ fontSize: 40, color: themeColors.white }}>
-                  {user?.name?.charAt(0).toUpperCase() ?? "?"}
+              </View>
+              <TouchableOpacity
+                onPress={onOpenWarning}
+                style={{
+                  backgroundColor: themeColors.danger,
+                  padding: 15,
+                  borderRadius: 10,
+                  marginVertical: 40,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  Sair da conta
                 </Text>
+              </TouchableOpacity>
+              {!!faq && Array.isArray(faq) && faq.length > 0 && (
+                <View style={{ marginVertical: 20 }}>
+                  <MFStackEditSubtitle
+                    themeColors={themeColors}
+                    title="FAQ"
+                    align="left"
+                    info="Perguntas e respostas."
+                  ></MFStackEditSubtitle>
+                  <View
+                    style={{
+                      paddingLeft: 20,
+                      marginTop: 30,
+                      gap: 30,
+                      width: 320,
+                    }}
+                  >
+                    {faq.map((e: any) => {
+                      return (
+                        <Pressable
+                          onPress={
+                            opennedFaq === e.id
+                              ? () => setOppenedFaq(null)
+                              : () => setOppenedFaq(e.id)
+                          }
+                          key={e.id}
+                          style={{ width: "100%" }}
+                        >
+                          <View
+                            style={[
+                              globalStyles.flexr,
+                              {
+                                gap: 10,
+                                justifyContent: "flex-start",
+                                width: "100%",
+                              },
+                            ]}
+                          >
+                            {opennedFaq === e.id ? (
+                              <AntDesign
+                                name="up"
+                                size={18}
+                                color={themeColors.text}
+                              />
+                            ) : (
+                              <AntDesign
+                                name="down"
+                                size={18}
+                                color={themeColors.text}
+                              />
+                            )}
+                            <Text
+                              style={{
+                                color: themeColors.text,
+                                fontSize: 16,
+                                fontWeight: 900,
+                              }}
+                            >
+                              {e.question}
+                            </Text>
+                            <FontAwesome
+                              name="question-circle-o"
+                              size={16}
+                              color={themeColors.text}
+                            />
+                          </View>
+                          {opennedFaq === e.id && (
+                            <View
+                              style={[
+                                globalStyles.flexr,
+                                {
+                                  width: "100%",
+                                  justifyContent: "flex-start",
+                                  alignItems: "flex-start",
+                                  padding: 15,
+                                  backgroundColor: themeColors.background,
+                                  borderWidth: 1,
+                                  borderColor: themeColors.background,
+                                  borderTopRightRadius: 20,
+                                  borderBottomRightRadius: 20,
+                                  borderBottomLeftRadius: 20,
+                                  shadowColor: "#000",
+                                  shadowOpacity: 0.3,
+                                  shadowRadius: 100,
+                                  elevation: 5,
+                                  minHeight: 100,
+                                  marginBottom: 10,
+                                  marginTop: 5,
+                                },
+                              ]}
+                            >
+                              <Text
+                                style={{
+                                  color: themeColors.text,
+                                  fontSize: 15,
+                                }}
+                              >
+                                {e.answer}
+                              </Text>
+                            </View>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
               )}
-            </View>
-          )}
-        </View>
-        <View style={globalStyles.headerInfoContent}>
-          <Text
-            style={[
-              globalStyles.headerInfoText,
-              { fontSize: 20, color: themeColors.text },
-            ]}
-          >
-            Olá, {user?.nick ? user?.nick : (user?.name).split(" ", 1)}!
-          </Text>
-          <View style={globalStyles.headerInfoText}>
-            <MaterialIcons name="email" size={16} color={themeColors.text} />
-            <Text style={{ textAlign: "center", color: themeColors.text }}>
-              {user?.email}
-            </Text>
+            </ScrollView>
           </View>
-        </View>
-        <View style={{ width: "100%", paddingHorizontal: 20, marginTop: 40 }}>
-          <MFPrimaryButton
-            themeColors={themeColors}
-            onPress={onOpenWarning}
-            title="Sair"
-          ></MFPrimaryButton>
-        </View>
-      </MFDefaultCard>
+        </MFDefaultCard>
+      </TouchableWithoutFeedback>
     </View>
   );
 }

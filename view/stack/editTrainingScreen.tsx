@@ -49,7 +49,7 @@ export default function EditTrainingScreen() {
     router = useRouter();
 
   const [mediaType, setMediaType] = useState<number>(),
-    [step, setStep] = useState<number>(2),
+    [step, setStep] = useState<number>(1),
     [muscleGroups, setMuscleGroups] = useState<any>([]),
     [exercisesList, setExercisesList] = useState<any>([]);
 
@@ -295,18 +295,21 @@ export default function EditTrainingScreen() {
     setMediaSelectorVisible(true);
   }
 
-  async function changeStep(step: number) {
+  async function changeStep(e: number) {
     let save;
-    if (hasChanged) {
-      if (step === 1) {
-        save = await handleEdit();
-      }
-      if (!!save) {
-        setHasChanged(false);
-      }
-      setStep(step);
+
+    if (e === 1) {
+      save = await handleEdit();
+      router.push("/(tabs)/training");
     } else {
-      setStep(step);
+      if (hasChanged) {
+        if (!!save) {
+          setHasChanged(false);
+        }
+        setStep(2);
+      } else {
+        setStep(2);
+      }
     }
   }
 
@@ -619,7 +622,7 @@ export default function EditTrainingScreen() {
           style={(globalStyles.flexc, { padding: 10, width: "100%", gap: 20 })}
         >
           <MFPrimaryButton
-            title={!isSaveLoading ? "Proximo" : "Salvando"}
+            title={!isSaveLoading ? "Exercícios" : "Salvando"}
             onPress={() => changeStep(2)}
             isLoading={isSaveLoading}
             isDisabled={isSaveLoading}
@@ -651,9 +654,7 @@ export default function EditTrainingScreen() {
                     data={e?.exercise}
                     themeColors={themeColors}
                     token={token}
-                    isIncomplete={
-                      !e.interval || !e.exercise || !e.amount || !e.repetitions
-                    }
+                    isIncomplete={!e.interval || !e.exercise || !e.amount}
                     onPress={() => {
                       setSerieEdit(e);
                       setIsSerieModalOpen(true);
@@ -696,18 +697,9 @@ export default function EditTrainingScreen() {
           </View>
           <View style={globalStyles.flexr}>
             <View style={{ width: "50%" }}>
-              <MFDefaulButton
-                title={!isSaveLoading ? "Voltar" : "Salvando"}
-                onPress={() => changeStep(1)}
-                isLoading={isSaveLoading}
-                isDisabled={isSaveLoading}
-                themeColors={themeColors}
-              ></MFDefaulButton>
-            </View>
-            <View style={{ width: "50%" }}>
               <MFPrimaryButton
                 title={!isSaveLoading ? "Salvar" : "Salvando"}
-                onPress={() => changeStep(3)}
+                onPress={() => changeStep(1)}
                 isLoading={isSaveLoading}
                 isDisabled={isSaveLoading}
                 themeColors={themeColors}
@@ -761,7 +753,7 @@ export default function EditTrainingScreen() {
         pickImage={pickImage}
       />
       <MFStackHeader
-        title="Treino"
+        title={data?.name ? `${data?.name}` : "Treino"}
         isLoading={isLoading}
         titleBtn={!isSaveLoading ? "Salvar" : "Salvando"}
         // onPress={handleEdit}

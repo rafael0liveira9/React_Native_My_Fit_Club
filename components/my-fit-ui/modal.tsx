@@ -3,6 +3,7 @@ import { globalStyles } from "@/styles/global";
 import { profileStyles } from "@/styles/profile";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,9 +20,10 @@ import {
   ViewProps,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { WebView } from "react-native-webview";
 import { MFModalSmallButton } from "./buttons";
 import { MFDefaultCard } from "./cards";
-import { MFDoubleInput, MFSelectInput, MFTextInput } from "./inputs";
+import { MFLongTextInput, MFSelectInput, MFTextInput } from "./inputs";
 
 interface MFLoginProps extends ViewProps {
   warningVisible?: boolean;
@@ -28,7 +31,21 @@ interface MFLoginProps extends ViewProps {
   text?: string;
   isLoading?: boolean;
   onPress?: (e: GestureResponderEvent) => void;
+  close: () => void;
+}
+
+interface MFFinishTrainingProps extends ViewProps {
+  warningVisible?: boolean;
+  themeColors?: any;
+  isLoading?: boolean;
+  onPress: () => void;
   close?: (e: GestureResponderEvent) => void;
+  isComplete?: boolean;
+  isFirstEvaluation?: boolean;
+  observation: string | undefined;
+  setObservation: (value: string) => void;
+  evaluation: number | undefined;
+  setEvaluation: (value: number) => void;
 }
 
 interface MFSingleInputProps extends ViewProps {
@@ -104,7 +121,14 @@ export function MFLogoutModal({
     >
       <View style={styles.container}>
         <MFDefaultCard themeColors={themeColors}>
-          <Text style={[styles.text, { color: themeColors.text }]}>{text}</Text>
+          <Text
+            style={[
+              styles.text,
+              { color: themeColors.text, textAlign: "center" },
+            ]}
+          >
+            {text}
+          </Text>
           <View style={styles.btnBox}>
             {!isLoading && (
               <>
@@ -409,7 +433,7 @@ export function MFCreateSerieModal({
     [addSet, setAddSet] = useState<string>("0"),
     [isometry, setIsometry] = useState<string>(""),
     [amount, setAmount] = useState<string>(""),
-    [repetitions, setRepetitions] = useState<string>(""),
+    [repetitions, setRepetitions] = useState<string[]>([]),
     [bisetExerciseId, setBisetExerciseId] = useState<string>(""),
     [muscleBisetSelected, setMuscleBisetSelected] = useState<string>(""),
     [dataBisetFiltered, setDataBisetFiltered] = useState<any>("");
@@ -417,23 +441,6 @@ export function MFCreateSerieModal({
   async function handleSaveSerie(serie: any) {
     if (token) {
       setIsSaveLoading(true);
-
-      console.log("body", {
-        token: token,
-        trainingId: trainingId ? parseInt(trainingId) : undefined,
-        serieId: data?.id ? data?.id : undefined,
-        amount: amount ? parseInt(amount!) : 0,
-        exercise: exercise ? parseInt(exercise!) : 0,
-        interval: interval ? parseInt(interval!) : 0,
-        isometry: isometry ? parseInt(isometry!) : 0,
-        repetitions: repetitions ? parseInt(repetitions!) : 0,
-        difficulty: [],
-        addSet: addSet ? parseInt(addSet!) : 0,
-        bisetExerciseId:
-          addSet && addSet === "3" && bisetExerciseId
-            ? parseInt(bisetExerciseId)
-            : undefined,
-      });
 
       const res = await CreateSerie({
         token: token,
@@ -443,7 +450,7 @@ export function MFCreateSerieModal({
         exercise: exercise ? parseInt(exercise!) : 0,
         interval: interval ? parseInt(interval!) : 0,
         isometry: isometry ? parseInt(isometry!) : 0,
-        repetitions: repetitions ? parseInt(repetitions!) : 0,
+        repetitions: [],
         difficulty: [],
         addSet: addSet ? parseInt(addSet!) : 0,
         bisetExerciseId:
@@ -451,8 +458,6 @@ export function MFCreateSerieModal({
             ? parseInt(bisetExerciseId)
             : undefined,
       });
-
-      console.log("res", res);
 
       if (res?.serie) {
         Toast.show({
@@ -470,10 +475,8 @@ export function MFCreateSerieModal({
     }
   }
 
-  console.log("isometry", addSet, typeof addSet);
   useEffect(() => {
     if (data) {
-      console.log("dentro do useEffect");
       setMuscleSelected(
         data.exercise?.groupMuscleId
           ? data.exercise?.groupMuscleId.toString()
@@ -482,7 +485,7 @@ export function MFCreateSerieModal({
       setExercise(data.exercise?.id ? data.exercise?.id.toString() : "0");
       setAmount(data.amount ? data.amount.toString() : "3");
       setInterval(data.interval ? data.interval.toString() : "60");
-      setRepetitions(data.repetitions ? data.repetitions.toString() : "15");
+      setRepetitions([]);
       setAddSet(data.addSet ? data.addSet.toString() : "0");
       setIsometry(data.isometry ? data.isometry.toString() : "0");
       if (data.addSet === "3") {
@@ -581,7 +584,7 @@ export function MFCreateSerieModal({
                             : ""
                         }
                       ></MFSelectInput>
-                      <MFDoubleInput
+                      {/* <MFDoubleInput
                         isNumeric
                         selectedValue={amount}
                         selectedValue2={
@@ -597,7 +600,7 @@ export function MFCreateSerieModal({
                             ? "Digite uma quantidade de séries e repetições."
                             : ""
                         }
-                      ></MFDoubleInput>
+                      ></MFDoubleInput> */}
                       <MFTextInput
                         isNumeric
                         themeColors={themeColors}
@@ -700,14 +703,236 @@ export function MFCreateSerieModal({
   );
 }
 
+export default function MFYouTubeModal({
+  video,
+  ytModalVisible,
+  setYtModalVisible,
+}: {
+  video: string;
+  ytModalVisible: boolean;
+  setYtModalVisible: (any: boolean) => void;
+}) {
+  return (
+    <Modal
+      animationType="slide"
+      visible={ytModalVisible}
+      onRequestClose={() => setYtModalVisible(false)}
+    >
+      <View style={{ flex: 1, backgroundColor: "black", padding: 20 }}>
+        <View style={{ height: 130 }}></View>
+        <WebView source={{ uri: video }} style={styles.ytVideoBox} />
+        <TouchableOpacity
+          onPress={() => setYtModalVisible(false)}
+          style={styles.closeBtnYT}
+        >
+          <Text style={{ color: "white", fontSize: 20 }}>Fechar</Text>
+        </TouchableOpacity>
+        <View style={{ height: 150 }}></View>
+      </View>
+    </Modal>
+  );
+}
+
+export function MFFinishTrainingModal({
+  warningVisible,
+  themeColors,
+  onPress,
+  close,
+  isLoading,
+  isComplete,
+  isFirstEvaluation,
+  observation,
+  setObservation,
+  evaluation,
+  setEvaluation,
+  ...props
+}: MFFinishTrainingProps) {
+  const [step, setStep] = useState<number>(0);
+
+  function ChangeStep() {
+    if (step === 1) {
+      if (isFirstEvaluation === true) {
+        setStep(2);
+        return null;
+      } else {
+        onPress();
+        return null;
+      }
+    } else if (step === 2) {
+      onPress();
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    if (!isComplete) {
+      setStep(1);
+    } else if (isFirstEvaluation) {
+      setStep(2);
+    } else {
+      setStep(3);
+    }
+  }, [isComplete, isFirstEvaluation]);
+
+  const renderStars = () => {
+    return (
+      <View style={styles.starContainer}>
+        {[1, 2, 3, 4, 5].map((num) => (
+          <TouchableOpacity key={num} onPress={() => setEvaluation(num)}>
+            <FontAwesome
+              name={!!evaluation && evaluation >= num ? "star" : "star-o"}
+              size={36}
+              color="#FFD700"
+              style={{ marginHorizontal: 4 }}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  return (
+    <Modal
+      visible={warningVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={close}
+    >
+      <View style={styles.container}>
+        <MFDefaultCard themeColors={themeColors}>
+          {/* Step 1 - Confirmação */}
+          <TouchableOpacity
+            onPress={close}
+            style={[
+              {
+                position: "absolute",
+                top: -20,
+                right: -10,
+                zIndex: 111,
+                backgroundColor: themeColors.secondary,
+                borderRadius: 100,
+              },
+            ]}
+          >
+            <AntDesign name="closecircle" size={40} color={themeColors.text} />
+          </TouchableOpacity>
+          {step === 1 ? (
+            <View style={styles.finishTrainingMain}>
+              <View style={globalStyles.flexr}>
+                <Text
+                  style={[
+                    styles.text,
+                    { color: themeColors.text, textAlign: "center" },
+                  ]}
+                >
+                  Deseja concluir sem finalizar os exercícios?
+                </Text>
+              </View>
+              {isLoading ? (
+                <MFModalSmallButton
+                  type="3"
+                  title=" "
+                  themeColors={themeColors}
+                  onPress={() => {}}
+                  isLoading={isLoading}
+                />
+              ) : (
+                <View style={globalStyles.flexr}>
+                  <MFModalSmallButton
+                    type="1"
+                    title="SIM"
+                    themeColors={themeColors}
+                    onPress={ChangeStep}
+                    isLoading={isLoading}
+                  />
+                  <MFModalSmallButton
+                    type="2"
+                    title="NÃO"
+                    themeColors={themeColors}
+                    onPress={close!}
+                    isLoading={isLoading}
+                  />
+                </View>
+              )}
+            </View>
+          ) : (
+            // Step 2 - Avaliação
+            step === 2 && (
+              <View style={styles.finishTrainingMain}>
+                <Text
+                  style={[
+                    styles.text,
+                    { color: themeColors.text, marginBottom: 16 },
+                  ]}
+                >
+                  Por favor, avalie o treino:
+                </Text>
+                {renderStars()}
+                <MFLongTextInput
+                  themeColors={themeColors}
+                  placeholder="Comente..."
+                  value={observation}
+                  onChangeText={setObservation}
+                />
+                <MFModalSmallButton
+                  type="1"
+                  title="Avaliar"
+                  themeColors={themeColors}
+                  onPress={ChangeStep}
+                  isLoading={isLoading}
+                />
+              </View>
+            )
+          )}
+        </MFDefaultCard>
+      </View>
+    </Modal>
+  );
+}
+
+export function MFDefaultModal({
+  warningVisible,
+  themeColors,
+  text,
+  onPress,
+  close,
+  isLoading,
+  children,
+  ...props
+}: MFLoginProps) {
+  return (
+    <Modal visible={warningVisible} animationType="slide" transparent={true}>
+      <Pressable style={styles.container} onPress={() => close()}>
+        {children}
+      </Pressable>
+    </Modal>
+  );
+}
+
 const styles = StyleSheet.create({
+  containerYT: { marginTop: 50, alignItems: "center" },
+  openBtnYT: { color: "blue", fontSize: 18 },
+  closeBtnYT: {
+    backgroundColor: "black",
+    padding: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ffffff",
+    borderRadius: 8,
+  },
+  finishTrainingMain: {
+    width: "90%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
   container: {
     flex: 1,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 30,
   },
   text: {
     fontSize: 22,
@@ -735,5 +960,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 20,
     borderRadius: 5,
+  },
+  ytVideoFull: {
+    width: "100%",
+    minHeight: 800,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 30,
+  },
+  ytVideoBox: {
+    width: "100%",
+    maxHeight: "90%",
+  },
+  starContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 16,
   },
 });

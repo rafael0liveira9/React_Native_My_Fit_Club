@@ -15,6 +15,7 @@ interface MFPrimaryButtonProps extends ButtonProps {
   isLoading?: boolean;
   isDisabled?: boolean;
   title: string;
+  isWhiteDetails?: boolean;
   onPress: (event: GestureResponderEvent) => void;
 }
 
@@ -52,10 +53,70 @@ interface TabBarButtonProps {
   route: string;
   color?: string;
   icon?: React.ReactNode;
+  themeColors?: any;
   iconActive?: React.ReactNode;
 }
 
 export function MFPrimaryButton({
+  themeColors,
+  isLoading,
+  isDisabled,
+  title,
+  onPress,
+  isWhiteDetails,
+  ...rest
+}: MFPrimaryButtonProps) {
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={[
+          styles.button,
+          {
+            backgroundColor: isDisabled
+              ? themeColors.disabled
+              : themeColors.primary,
+            borderColor: isDisabled
+              ? themeColors.primaryOpacity
+              : isWhiteDetails
+              ? themeColors.white
+              : themeColors.text,
+            borderWidth: 2,
+            borderStyle: "solid",
+          },
+        ]}
+        onPress={onPress}
+        activeOpacity={0.7}
+        disabled={isDisabled || isLoading}
+        {...rest}
+      >
+        <Text
+          style={[
+            styles.text,
+            {
+              fontWeight: 900,
+              color:
+                isLoading || isDisabled
+                  ? themeColors.primaryOpacity
+                  : isWhiteDetails
+                  ? themeColors.white
+                  : themeColors.text,
+            },
+          ]}
+        >
+          {isLoading && (
+            <ActivityIndicator
+              color={isLoading ? themeColors.primaryOpacity : themeColors.white}
+              style={{ paddingRight: 20 }}
+            />
+          )}
+          {title}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export function MFSuccessButton({
   themeColors,
   isLoading,
   isDisabled,
@@ -71,10 +132,8 @@ export function MFPrimaryButton({
           {
             backgroundColor: isDisabled
               ? themeColors.disabled
-              : themeColors.primary,
-            borderColor: isDisabled
-              ? themeColors.primaryOpacity
-              : themeColors.primary,
+              : themeColors.success,
+            borderColor: isDisabled ? themeColors.success : themeColors.success,
             borderWidth: 2,
             borderStyle: "solid",
           },
@@ -89,15 +148,13 @@ export function MFPrimaryButton({
             styles.text,
             {
               color:
-                isLoading || isDisabled
-                  ? themeColors.primaryOpacity
-                  : themeColors.white,
+                isLoading || isDisabled ? themeColors.white : themeColors.white,
             },
           ]}
         >
           {isLoading && (
             <ActivityIndicator
-              color={isLoading ? themeColors.primaryOpacity : themeColors.white}
+              color={isLoading ? themeColors.white : themeColors.white}
               style={{ paddingRight: 20 }}
             />
           )}
@@ -294,7 +351,7 @@ export function MFPrimaryOutlinedButton({
             borderColor: isDisabled
               ? themeColors.primaryOpacity
               : themeColors.primary,
-            borderWidth: 2,
+            borderWidth: 1,
             borderStyle: "solid",
           },
         ]}
@@ -307,6 +364,7 @@ export function MFPrimaryOutlinedButton({
           style={[
             styles.text,
             {
+              fontWeight: 900,
               color:
                 isLoading || isDisabled
                   ? themeColors.primaryOpacity
@@ -366,13 +424,19 @@ export function MFCustomTabIcon({
   route,
   color,
   icon,
+  themeColors,
   iconActive,
 }: TabBarButtonProps) {
   const pathname = usePathname();
   const isActive = pathname === route;
 
   return (
-    <View style={{ alignItems: "center", backgroundColor: "#ffffff00" }}>
+    <View
+      style={{
+        alignItems: "center",
+        backgroundColor: "#FFFFFF00",
+      }}
+    >
       {isActive ? iconActive : icon}
     </View>
   );

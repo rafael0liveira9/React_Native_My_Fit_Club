@@ -5,8 +5,6 @@ import {
 export const trainingStyles = StyleSheet.create({
     container: {
         width: '100%',
-        paddingHorizontal: 20,
-        paddingVertical:40
     },
     noTrainingBox: {
         width: '100%',

@@ -9,14 +9,18 @@ import { useTheme } from "@/context/ThemeContext";
 import { getErrorText } from "@/controllers/utils";
 import { register } from "@/service/user";
 import { authStyles } from "@/styles/auth";
+import { globalStyles } from "@/styles/global";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
@@ -39,6 +43,26 @@ export default function RegisterScreen() {
         type: "error",
         text1: "❌ Atenção, preencha todos os campos.",
       });
+
+      if (name.length == 0) {
+        Toast.show({
+          type: "error",
+          text1: "❌ Atenção, preencha o nome.",
+        });
+      }
+      if (password.length == 0) {
+        Toast.show({
+          type: "error",
+          text1: "❌ Atenção, preencha a senha.",
+        });
+      }
+      if (email.length == 0) {
+        Toast.show({
+          type: "error",
+          text1: "❌ Atenção, preencha o e-mail.",
+        });
+      }
+
       return null;
     }
 
@@ -51,8 +75,9 @@ export default function RegisterScreen() {
       }
       return null;
     }
-
     setIsLoading(true);
+    Keyboard.dismiss();
+
     const res = await register({ email, password, name });
 
     if (res?.data) {
@@ -66,7 +91,7 @@ export default function RegisterScreen() {
         await SecureStore.setItemAsync("userName", res?.data?.client?.name);
         await SecureStore.setItemAsync(
           "userType",
-          res?.data?.user?.typeId.toString()
+          res?.data?.client?.userType.toString()
         );
 
         Toast.show({
@@ -165,88 +190,117 @@ export default function RegisterScreen() {
         { backgroundColor: themeColors.background },
       ]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
-      <View style={authStyles.imageBox}>
-        <Image
-          style={authStyles.mflogo}
-          source={require("@/assets/images/my-fit/my-fit-logo.png")}
-        />
-      </View>
-
-      <MFDefaultCard themeColors={themeColors}>
-        <Text
-          style={[
-            authStyles.title,
-            { color: themeColors.text, paddingBottom: 20 },
-          ]}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{
+            alignItems: "center",
+            justifyContent: "center",
+            flexGrow: 1,
+          }}
+          keyboardShouldPersistTaps="handled"
         >
-          Cadastre-se
-        </Text>
-        <MFTextInput
-          themeColors={themeColors}
-          placeholder="Digite o nome"
-          value={name}
-          onChangeText={setName}
-          error={
-            name.length > 0 && errors.includes("name")
-              ? getErrorText("name")
-              : ""
-          }
-        ></MFTextInput>
-        <MFTextInput
-          themeColors={themeColors}
-          placeholder="Digite o e-mail"
-          value={email}
-          onChangeText={setEmail}
-          error={
-            email.length > 0 && errors.includes("email")
-              ? getErrorText("email")
-              : ""
-          }
-        ></MFTextInput>
-        <MFPasswordInput
-          themeColors={themeColors}
-          placeholder="Digite uma senha"
-          value={password}
-          onChangeText={setPassword}
-          error={
-            password.length > 0 && errors.includes("password")
-              ? getErrorText("password")
-              : ""
-          }
-        ></MFPasswordInput>
-        <MFPasswordInput
-          themeColors={themeColors}
-          placeholder="Confirme a senha"
-          value={passwordConfirm}
-          onChangeText={setPasswordConfirm}
-          error={
-            password.length > 0 &&
-            passwordConfirm.length > 0 &&
-            errors.includes("passwordConfirm")
-              ? getErrorText("passwordConfirm")
-              : ""
-          }
-        ></MFPasswordInput>
-        <View style={{ width: "80%", paddingTop: 10 }}>
-          <MFPrimaryButton
-            title="Salvar"
-            onPress={handleRegister}
-            isLoading={false}
-            isDisabled={false}
-            themeColors={themeColors}
-          />
-        </View>
-        <View style={{ width: "80%" }}>
-          <MFPrimaryOutlinedButton
-            title="Já tenho cadastro"
-            onPress={handleAlready}
-            isLoading={false}
-            isDisabled={false}
-            themeColors={themeColors}
-          />
-        </View>
-      </MFDefaultCard>
+          <MFDefaultCard themeColors={themeColors}>
+            <View
+              style={[
+                authStyles.imageBox,
+                {
+                  paddingBottom: 10,
+                },
+              ]}
+            >
+              <Image
+                style={authStyles.mflogo}
+                source={
+                  theme === "dark"
+                    ? require(`@/assets/images/my-fit/logo/my_fit_club_v_r.png`)
+                    : require(`@/assets/images/my-fit/logo/my_fit_club_v_br.png`)
+                }
+              />
+            </View>
+            <View
+              style={[
+                globalStyles.flexr,
+                { width: "100%", justifyContent: "flex-start" },
+              ]}
+            >
+              <Text style={[authStyles.title, { color: themeColors.text }]}>
+                Cadastre-se
+              </Text>
+            </View>
+            <MFTextInput
+              themeColors={themeColors}
+              placeholder="Digite o nome"
+              value={name}
+              onChangeText={setName}
+              error={
+                name.length > 0 && errors.includes("name")
+                  ? getErrorText("name")
+                  : ""
+              }
+            />
+
+            <MFTextInput
+              themeColors={themeColors}
+              placeholder="Digite o e-mail"
+              value={email}
+              onChangeText={setEmail}
+              error={
+                email.length > 0 && errors.includes("email")
+                  ? getErrorText("email")
+                  : ""
+              }
+            />
+
+            <MFPasswordInput
+              themeColors={themeColors}
+              placeholder="Digite uma senha"
+              value={password}
+              onChangeText={setPassword}
+              error={
+                password.length > 0 && errors.includes("password")
+                  ? getErrorText("password")
+                  : ""
+              }
+            />
+
+            <MFPasswordInput
+              themeColors={themeColors}
+              placeholder="Confirme a senha"
+              value={passwordConfirm}
+              onChangeText={setPasswordConfirm}
+              error={
+                password.length > 0 &&
+                passwordConfirm.length > 0 &&
+                errors.includes("passwordConfirm")
+                  ? getErrorText("passwordConfirm")
+                  : ""
+              }
+            />
+
+            <View style={{ width: "80%", paddingTop: 10 }}>
+              <MFPrimaryButton
+                title="Salvar"
+                onPress={handleRegister}
+                isLoading={isLoading}
+                isDisabled={false}
+                themeColors={themeColors}
+              />
+            </View>
+
+            <View style={{ width: "80%" }}>
+              <MFPrimaryOutlinedButton
+                title="Já tenho cadastro"
+                onPress={handleAlready}
+                isLoading={false}
+                isDisabled={false}
+                themeColors={themeColors}
+              />
+            </View>
+          </MFDefaultCard>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }

@@ -4,7 +4,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { format, isValid, parse } from "date-fns";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   Platform,
@@ -13,6 +13,7 @@ import {
   TextInput,
   TextInputProps,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ViewProps,
 } from "react-native";
@@ -41,6 +42,7 @@ interface MFTextInputProps extends TextInputProps {
   isDisabled?: boolean;
   isNumeric?: boolean;
   themeColors?: any;
+  fontSize?: any;
   error?: string;
   label?: string;
   labelIcon?: React.ReactNode;
@@ -254,19 +256,29 @@ export function MFPasswordInput({
 
   return (
     <View style={styles.container}>
-      <TextInput
-        secureTextEntry={!visible}
+      <View
         style={[
-          styles.input,
+          styles.inputBox,
           {
             backgroundColor: themeColors.background,
-            color: error ? themeColors.primary : themeColors.text,
             borderColor: error ? themeColors.primary : themeColors.text,
           },
         ]}
-        placeholderTextColor={themeColors.textSecondary}
-        {...props}
-      />
+      >
+        <TextInput
+          secureTextEntry={!visible}
+          style={[
+            styles.input,
+            {
+              color: error ? themeColors.primary : themeColors.text,
+              borderColor: error ? themeColors.primary : themeColors.text,
+              width: "100%",
+            },
+          ]}
+          placeholderTextColor={themeColors.textSecondary}
+          {...props}
+        />
+      </View>
       {error && (
         <View style={styles.errorView}>
           <Text style={[styles.errorText, { color: themeColors.primary }]}>
@@ -405,7 +417,12 @@ export function MFDateInputText2({
       const parsed = parse(masked, "dd/MM/yyyy", new Date());
       if (isValid(parsed)) {
         const adjusted = new Date(
-          Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
+          parsed.getFullYear(),
+          parsed.getMonth(),
+          parsed.getDate(),
+          12,
+          0,
+          0
         );
         onChange(adjusted.toISOString());
       }
@@ -427,22 +444,17 @@ export function MFDateInputText2({
           </Text>
         </View>
       )}
-      <TextInput
-        value={textValue}
-        onChangeText={handleChange}
-        keyboardType="numeric"
-        maxLength={10}
-        placeholder="DD/MM/AAAA"
-        placeholderTextColor={themeColors.textSecondary}
-        style={[
-          styles.input,
-          {
-            backgroundColor: themeColors.background,
-            borderColor: error ? themeColors.primary : themeColors.text,
-          },
-        ]}
-      />
-
+      <View style={styles.inputBox}>
+        <TextInput
+          value={textValue}
+          onChangeText={handleChange}
+          keyboardType="numeric"
+          maxLength={10}
+          placeholder="DD/MM/AAAA"
+          placeholderTextColor={themeColors.textSecondary}
+          style={styles.input}
+        />
+      </View>
       {error && (
         <View style={styles.errorView}>
           <Text style={[styles.errorText, { color: themeColors.primary }]}>
@@ -589,6 +601,52 @@ export function MFDoubleInput({
   );
 }
 
+export function MFWheightInput({
+  isDisabled,
+  themeColors,
+  label,
+  fontSize,
+  error,
+  ...props
+}: MFTextInputProps) {
+  const inputRef = useRef<TextInput>(null);
+
+  return (
+    <View
+      style={[
+        styles.inputInfoWBox,
+        {
+          backgroundColor: themeColors.background,
+          borderColor: error ? themeColors.primary : themeColors.text,
+        },
+      ]}
+    >
+      <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <TextInput
+            ref={inputRef}
+            style={{
+              color: error ? themeColors.primary : themeColors.text,
+              fontSize: fontSize ? fontSize : 13,
+            }}
+            keyboardType="numeric"
+            placeholderTextColor={themeColors.textSecondary}
+            {...props}
+          />
+          <Text
+            style={{
+              color: themeColors.text,
+              fontSize: fontSize ? fontSize - 2 : 11,
+            }}
+          >
+            kg
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     position: "relative",
@@ -614,6 +672,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     height: 47,
+    flexDirection: "row",
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 10,
+  },
+  inputInfoWBox: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 0,
     flexDirection: "row",
     display: "flex",
     justifyContent: "flex-start",
@@ -652,6 +721,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 600,
     textAlign: "right",
+    paddingBottom: 7,
   },
   sortBox: {
     width: "auto",

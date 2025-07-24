@@ -16,21 +16,22 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
-    height: 70,
+    height:60,
     backgroundColor: "#f5f5f5",
-    display:'flex',
+    display: 'flex',
+    flexDirection:'row',
     alignItems: "center",
-    justifyContent: "center",
-    position: 'relative'
+    justifyContent: "flex-start",
+    position: 'relative',
+    paddingHorizontal: 20,
   },
   stackHeader: {
-    height: 70,
+    height: 60,
     display: 'flex',
     flexDirection: 'row',
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop:10
   },
   stackBackButton: {
     display: 'flex',
@@ -40,28 +41,28 @@ export const globalStyles = StyleSheet.create({
     gap: 20
   },
   headerImageBox: {
-    width: '100%',
-    height: 120,
+    width: 190,
+    display: 'flex',
+    flexDirection: 'row',
     alignItems: "center",
     justifyContent: "center",
-    display: 'flex',
   },
   headerLogo: {
     objectFit: 'contain',
-    width:60,
+    width: 180,
+    height:31
   },
   headerThemeBtn: {
     position: 'absolute',
-    top: 20,
     right:15
   },
   headerInfoBox: {
+    width: '100%',
+    height: '85%',
     position: 'absolute',
-    top: 0,
-    right: 0,
+    bottom: 0,
+    left: 0,
     zIndex: 9,
-    marginTop: 50,
-    marginRight: 30
   },
   headerInfoPhoto: {
     width: 220,
@@ -79,7 +80,7 @@ export const globalStyles = StyleSheet.create({
     display: 'flex',
   },
   headerInfoContent: {
-    width: 220,
+    width: '100%',
     height: 'auto',
     alignItems: "flex-start",
     justifyContent: "flex-start",
@@ -98,7 +99,7 @@ export const globalStyles = StyleSheet.create({
     textAlign:'center'
   },
   themeBtnBox: {
-    width: 220,
+    width: '100%',
     alignItems: "flex-end",
     justifyContent: "flex-start",
     display: 'flex',

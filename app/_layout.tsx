@@ -1,3 +1,4 @@
+import { ConfettiOverlay } from "@/components/my-fit-ui/animations";
 import { Colors } from "@/constants/Colors";
 import { MFThemeProvider } from "@/context/ThemeContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -13,6 +14,7 @@ import Toast from "react-native-toast-message";
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Orbitron: require("../assets/fonts/Orbitron-VariableFont_wght.ttf"),
   });
   const colorScheme = useColorScheme();
   const router = useRouter();
@@ -65,7 +67,7 @@ export default function RootLayout() {
     setHasRedirected(true);
 
     if (token) {
-      router.replace("/(tabs)/training");
+      router.replace("/(tabs)");
     } else {
       router.replace("/(auth)");
     }
@@ -91,6 +93,7 @@ export default function RootLayout() {
       }}
     >
       <MFThemeProvider colorScheme={theme ? theme : colorScheme}>
+        <ConfettiOverlay />
         <Stack screenOptions={{ headerShown: false }} />
         <StatusBar style="auto" />
         <Toast />

@@ -165,6 +165,7 @@ export default function MFProfileDataCard({
             isLoading={isLoading}
             isDisabled={isLoading}
             themeColors={themeColors}
+            isWhiteDetails={true}
           ></MFPrimaryButton>
         </View>
       </View>
@@ -180,6 +181,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
     padding: 20,
+    paddingTop: 40,
   },
   title: {
     display: "flex",
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    paddingTop: 60,
+    paddingTop: 30,
     width: "100%",
   },
 });

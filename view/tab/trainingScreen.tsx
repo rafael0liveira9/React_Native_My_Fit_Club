@@ -1,17 +1,33 @@
-import { MFPlusCard, MFTrainingCard } from "@/components/my-fit-ui/cards";
+import {
+  MFPlusCard,
+  MFTrainingExecutionCard,
+} from "@/components/my-fit-ui/cards";
+import { MFLogoutModal } from "@/components/my-fit-ui/modal";
 import MFSeparator from "@/components/my-fit-ui/separator";
 import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { User } from "@/model/user";
-import { getTrainingsByToken } from "@/service/training";
+import {
+  FinishTraining,
+  getTrainingsByToken,
+  TrainingExecute,
+  UnassignTraining,
+} from "@/service/training";
 import { getMyData } from "@/service/user";
 import { trainingStyles } from "@/styles/training";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function TrainingScreen() {
   const { theme } = useTheme(),
@@ -19,7 +35,14 @@ export default function TrainingScreen() {
     router = useRouter();
 
   const [isLoading, setIsLoading] = useState<boolean>(false),
+    [isExecutionLoading, setIsExecutionLoading] = useState<boolean>(false),
     [user, setUser] = useState<User>(),
+    [modalType, setModalType] = useState<number>(1),
+    [actualId, setActualId] = useState<number | null>(null),
+    [confirmodalOpen, setConfirmodalOpen] = useState<boolean>(false),
+    [executionItem, setExecutionItem] = useState<any | null>(null),
+    [token, setToken] = useState<string | null>(),
+    [tempDel, setTempDel] = useState<number[]>([]),
     [assign, setAssign] = useState<any>();
 
   async function getUserData() {
@@ -28,10 +51,11 @@ export default function TrainingScreen() {
       const y = await SecureStore.getItemAsync("userId");
       const z = await SecureStore.getItemAsync("userToken");
 
+      setToken(z);
+      setExecutionItem(null);
       if (y && z) {
         const data: any = await getMyData({ token: z });
         const myTrainings = await getTrainingsByToken({ token: z });
-
         if (!!data) {
           setUser({
             id: data?.user?.id,
@@ -54,6 +78,14 @@ export default function TrainingScreen() {
           });
 
           if (!!myTrainings) {
+            const y = [...(myTrainings || [])].filter(
+              (e) =>
+                !!e.training?.trainingExecution[0]?.startAt &&
+                !e.training?.trainingExecution[0]?.endAt
+            );
+            if (!!y && y.length > 0) {
+              setExecutionItem(y[0]?.id);
+            }
             setAssign(myTrainings);
           }
         } else {
@@ -68,6 +100,98 @@ export default function TrainingScreen() {
     }
   }
 
+  function GoToExecution(id: number) {
+    if (id) router.push(`/execution/${id.toString()}`);
+    setConfirmodalOpen(false);
+  }
+
+  async function CreateAndGoToExecution() {
+    if (actualId && token) {
+      setIsLoading(true);
+      const x = await TrainingExecute({
+        trainingId: +actualId,
+        token: token,
+      });
+
+      setIsLoading(false);
+      setConfirmodalOpen(false);
+
+      if (x?.status === 200 && x.data?.execution?.id) {
+        Toast.show({
+          type: "success",
+          text1: `✅ Treino iniciado.`,
+        });
+        router.push(`/execution/${x.data?.execution?.id.toString()}`);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: `❌ Erro ao iniciar o treino.`,
+        });
+      }
+    }
+  }
+
+  async function FinishExecution() {
+    if (actualId && token) {
+      setIsLoading(true);
+
+      const x = await FinishTraining({
+        evaluation: 999,
+        executionId: +actualId,
+        observation: "Finalizado sem avaliação",
+        token: token,
+      });
+
+      setIsLoading(false);
+      setConfirmodalOpen(false);
+      if (x?.status === 200) {
+        Toast.show({
+          type: "success",
+          text1: `✅ Treino finalizado.`,
+        });
+        setAssign([]);
+        getUserData();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: `❌ Erro ao finalizar o treino.`,
+        });
+      }
+    }
+  }
+
+  function OpenModal(id: number, type: number) {
+    if (id) {
+      setModalType(type);
+      setActualId(id);
+      setConfirmodalOpen(true);
+    }
+  }
+
+  async function Unassign(id: number) {
+    if (id && token) {
+      setIsExecutionLoading(true);
+      const x = await UnassignTraining({
+        id: id,
+        token: token,
+      });
+
+      if (x?.status === 200) {
+        setTempDel([...tempDel, id]);
+        Toast.show({
+          type: "success",
+          text1: `✅ Treino removido.`,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: `❌ Erro ao remover o treino.`,
+        });
+      }
+      setIsExecutionLoading(false);
+    }
+  }
+
   useEffect(() => {
     getUserData();
   }, []);
@@ -79,6 +203,21 @@ export default function TrainingScreen() {
         backgroundColor: themeColors.background,
       }}
     >
+      {confirmodalOpen && (
+        <MFLogoutModal
+          warningVisible={confirmodalOpen}
+          themeColors={themeColors}
+          text={modalType === 1 ? "Iniciar o treino?" : "Finalizar o treino?"}
+          onPress={
+            modalType === 1
+              ? () => CreateAndGoToExecution()
+              : () => FinishExecution()
+          }
+          close={() => setConfirmodalOpen(false)}
+          isLoading={isLoading}
+        ></MFLogoutModal>
+      )}
+
       {isLoading ? (
         <View
           style={{
@@ -91,43 +230,68 @@ export default function TrainingScreen() {
         </View>
       ) : (
         <View style={trainingStyles.container}>
-          <MFStackEditSubtitle
-            themeColors={themeColors}
-            title="Treinamento"
-            align="left"
-          ></MFStackEditSubtitle>
-          <View style={{ height: 30 }}></View>
-          {assign ? (
-            assign?.map((e: any, y: number) => {
-              return (
-                <TouchableOpacity
-                  key={y}
-                  onPress={() => router.push(`/training/${(e?.id).toString()}`)}
-                  style={{
-                    position: "relative",
-                  }}
-                >
-                  <MFTrainingCard
-                    themeColors={themeColors}
-                    data={e}
-                  ></MFTrainingCard>
-                  <View style={{ width: "100%", padding: 30 }}>
-                    <MFSeparator
-                      width={220}
-                      height={1}
-                      color={themeColors.themeGrey}
-                    ></MFSeparator>
+          <ScrollView style={{ paddingHorizontal: 10, paddingTop: 30 }}>
+            <MFStackEditSubtitle
+              themeColors={themeColors}
+              title="Meus Treinos"
+              info="Lista de terinos que ja estão atribuidos e prontos para executar."
+            ></MFStackEditSubtitle>
+            <View style={{ height: 30 }}></View>
+            {assign ? (
+              assign?.map((e: any, y: number) => {
+                const isNew =
+                  !e.training?.trainingExecution ||
+                  (e.training?.trainingExecution &&
+                    e.training?.trainingExecution.length === 0);
+
+                if (tempDel.includes(e.id)) {
+                  return null;
+                }
+                return (
+                  <View
+                    key={y}
+                    style={{
+                      position: "relative",
+                    }}
+                  >
+                    <MFTrainingExecutionCard
+                      isNew={isNew}
+                      isExecutionLoading={isExecutionLoading}
+                      GoToExecution={GoToExecution}
+                      OpenModal={OpenModal}
+                      isInExecution={executionItem}
+                      themeColors={themeColors}
+                      data={e}
+                      Unassign={Unassign}
+                    ></MFTrainingExecutionCard>
+                    <View style={{ width: "100%", padding: 30 }}>
+                      <MFSeparator
+                        width={220}
+                        height={1}
+                        color={themeColors.themeGrey}
+                      ></MFSeparator>
+                    </View>
                   </View>
-                </TouchableOpacity>
-              );
-            })
-          ) : (
-            <View style={trainingStyles.noTrainingBox}>
+                );
+              })
+            ) : (
+              <View style={trainingStyles.noTrainingBox}>
+                <Text style={{ color: themeColors.text }}>
+                  Você não possui, pressione para adicionar.
+                </Text>
+              </View>
+            )}
+            <View
+              style={[
+                trainingStyles.noTrainingBox,
+                { height: 100, marginBottom: 30 },
+              ]}
+            >
               <Text style={{ color: themeColors.text }}>
-                Você não possui, pressione para adicionar.
+                Você não possui mais treinos.
               </Text>
             </View>
-          )}
+          </ScrollView>
           <TouchableOpacity onPress={() => router.push("/(stack)/training")}>
             <MFPlusCard themeColors={themeColors}>
               <AntDesign

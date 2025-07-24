@@ -2,7 +2,6 @@ import { MFTrainingCard } from "@/components/my-fit-ui/cards";
 import MFFilterSortBox from "@/components/my-fit-ui/filterBox";
 import { MFSingleInputModal } from "@/components/my-fit-ui/modal";
 import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
-import MFStackHeader from "@/components/my-fit-ui/stackHeader";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { CreateTraining, getTrainingsByToken } from "@/service/training";
@@ -119,7 +118,6 @@ export default function NewTrainingScreen() {
     getUserData();
   }, []);
 
-  // console.log(data);
   return (
     <ScrollView
       style={{
@@ -144,12 +142,12 @@ export default function NewTrainingScreen() {
         onPress={handleNewTraining}
         close={() => setIsNewOPen(false)}
       ></MFSingleInputModal>
-      <MFStackHeader
+      {/* <MFStackHeader
         title="Treinos"
         isLoading={isSaveLoading}
         titleBtn="Criar novo"
         onPress={() => setIsNewOPen(true)}
-      ></MFStackHeader>
+      ></MFStackHeader> */}
       <MFFilterSortBox
         themeColors={themeColors}
         search={search}
@@ -161,8 +159,9 @@ export default function NewTrainingScreen() {
       <View style={trainingStyles.listBox}>
         <MFStackEditSubtitle
           themeColors={themeColors}
-          title="Treinos disponíveis"
+          title="Atribuir novo treino"
           align="left"
+          info="Lista de treinos que estão disponiveis para você atribuir ao seu treinamento."
         ></MFStackEditSubtitle>
         <View style={{ height: 20 }}></View>
         <View

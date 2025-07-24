@@ -10,7 +10,7 @@ export const authStyles = StyleSheet.create({
       alignItems: "center",
       paddingHorizontal: 20,
       gap: 10,
-      paddingBottom: 80
+      paddingBottom: 40
     },
     box: {
       width: "100%",
@@ -70,7 +70,7 @@ export const authStyles = StyleSheet.create({
   },
   mflogo: {
     objectFit: 'contain',
-    width:120,
+    width: 90
   }
   });
   

@@ -30,7 +30,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+} from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function EditProfileScreen() {
@@ -184,226 +190,240 @@ export default function EditProfileScreen() {
   }, [name, document, phone]);
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: themeColors.background,
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
     >
-      <MFStackHeader
-        title="Editar dados"
-        isLoading={isSaveLoading}
-        onPress={handleSubmit}
-      ></MFStackHeader>
-      {isLoading ? (
-        <View
-          style={{
-            height: "100%",
-            minHeight: 500,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <ActivityIndicator size={40} color={themeColors.primary} />
-        </View>
-      ) : (
-        <View style={profileStyles.profileEditBox}>
-          <MFStackEditSubtitle
-            themeColors={themeColors}
-            title="My Fit Club"
-            align="right"
-          ></MFStackEditSubtitle>
-          <MFSelectInput
-            label="Objetivo atual"
-            labelIcon={
-              <FontAwesome6
-                name="dumbbell"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            selectedValue={objective || "0"}
-            onValueChange={setObjective}
-            options={[{ label: "-", value: "-" }, ...MFObjetives]}
-            themeColors={Colors[theme]}
-            isDisabled={false}
-            error={
-              !objective || objective === "-" ? "Preencha o seu objetivo." : ""
-            }
-          />
-          <View style={{ height: 50 }}></View>
-          <MFStackEditSubtitle
-            themeColors={themeColors}
-            title="Dados pessoais"
-            align="right"
-          ></MFStackEditSubtitle>
-          <MFTextInput
-            label="Nome: "
-            labelIcon={
-              <FontAwesome name="user" size={16} color={themeColors.text} />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o nome"
-            value={name}
-            onChangeText={setName}
-            error={
-              name && name.length > 0
-                ? errors.includes("name")
-                  ? getErrorText("name")
-                  : ""
-                : "Preencha com um nome"
-            }
-          ></MFTextInput>
-          <MFTextInput
-            isNumeric={true}
-            label="CPF: "
-            labelIcon={
-              <Ionicons
-                name="document-lock"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o nome"
-            value={document}
-            onChangeText={(text: string) => {
-              if (text) {
-                setDocument(cpfFormat(text.toString()));
-              } else {
-                setDocument("");
-              }
+      <ScrollView
+        style={{
+          flex: 1,
+          backgroundColor: themeColors.background,
+        }}
+      >
+        <MFStackHeader
+          title="Editar dados"
+          isLoading={isSaveLoading}
+          onPress={handleSubmit}
+        ></MFStackHeader>
+        {isLoading ? (
+          <View
+            style={{
+              height: "100%",
+              minHeight: 500,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            error={
-              document && document.length > 0
-                ? errors.includes("document")
-                  ? getErrorText("document")
-                  : ""
-                : "Preencha com um documento válido"
-            }
-          ></MFTextInput>
-          <MFTextInput
-            label="Apelido: "
-            labelIcon={
-              <FontAwesome
-                name="user-secret"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o apelido"
-            value={nick}
-            onChangeText={setNick}
-            error={nick && nick.length > 0 ? "" : "Preencha com um apelido."}
-          ></MFTextInput>
-          <MFSelectInput
-            label="Gênero"
-            labelIcon={
-              <FontAwesome5
-                name="transgender"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            selectedValue={gender || "0"}
-            onValueChange={setGender}
-            options={[{ label: "-", value: "-" }, ...MFGenders]}
-            themeColors={Colors[theme]}
-            isDisabled={false}
-            error={!gender || gender === "-" ? "Preencha o seu gênero." : ""}
-          />
-          <MFDateInputText2
-            label="Data de Nascimento"
-            labelIcon={
-              <FontAwesome
-                name="birthday-cake"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            value={birthDate || ""}
-            onChange={setBirthDate}
-            error={birthDate ? "" : "Preencha com a Data de Nascimento."}
-            themeColors={themeColors}
-          />
-          <MFLongTextInput
-            label="Sobre mim: "
-            labelIcon={
-              <FontAwesome
-                name="paragraph"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            themeColors={themeColors}
-            placeholder="Digite aqui"
-            value={description}
-            onChangeText={setDescription}
-            error={description ? "" : "Escreva um pouco sobre você."}
-          ></MFLongTextInput>
-          <View style={{ height: 50 }}></View>
-          <MFStackEditSubtitle
-            themeColors={themeColors}
-            title="Dados de contato"
-            align="right"
-          ></MFStackEditSubtitle>
-          <MFTextInput
-            isDisabled={true}
-            label="E-mail: "
-            labelIcon={
-              <MaterialIcons name="email" size={16} color={themeColors.text} />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o e-mail"
-            value={email}
-          ></MFTextInput>
-          <MFTextInput
-            label="Whatsapp: "
-            isNumeric={true}
-            labelIcon={
-              <FontAwesome5
-                name="whatsapp-square"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o whatsapp"
-            value={phone}
-            onChangeText={(text: string) => {
-              if (text) {
-                setPhone(phoneFormat(text.toString()));
-              } else {
-                setPhone("");
+          >
+            <ActivityIndicator size={40} color={themeColors.primary} />
+          </View>
+        ) : (
+          <View style={profileStyles.profileEditBox}>
+            <MFStackEditSubtitle
+              themeColors={themeColors}
+              title="My Fit Club"
+              align="right"
+              info="Dados pertinentes ao app."
+            ></MFStackEditSubtitle>
+            <MFSelectInput
+              label="Objetivo atual"
+              labelIcon={
+                <FontAwesome6
+                  name="dumbbell"
+                  size={16}
+                  color={themeColors.text}
+                />
               }
-            }}
-            error={
-              phone && phone.length > 0
-                ? errors.includes("phone")
-                  ? getErrorText("phone")
+              selectedValue={objective || "0"}
+              onValueChange={setObjective}
+              options={[{ label: "-", value: "-" }, ...MFObjetives]}
+              themeColors={Colors[theme]}
+              isDisabled={false}
+              error={
+                !objective || objective === "-"
+                  ? "Preencha o seu objetivo."
                   : ""
-                : "Preencha com o Whatsapp."
-            }
-          ></MFTextInput>
-          <MFTextInput
-            label="Instagram: "
-            labelIcon={
-              <Entypo
-                name="instagram-with-circle"
-                size={16}
-                color={themeColors.text}
-              />
-            }
-            themeColors={themeColors}
-            placeholder="Digite o e-mail"
-            value={instagram}
-            onChangeText={setInstagram}
-            error={instagram ? "" : "Preencha com o Instagram."}
-          ></MFTextInput>
-          <View style={{ height: 50 }}></View>
-        </View>
-      )}
-    </ScrollView>
+              }
+            />
+            <View style={{ height: 50 }}></View>
+            <MFStackEditSubtitle
+              themeColors={themeColors}
+              title="Dados pessoais"
+              align="right"
+              info="Dados pessoais para funcionalidades exclusivas de relacionamento entre clientes."
+            ></MFStackEditSubtitle>
+            <MFTextInput
+              label="Nome: "
+              labelIcon={
+                <FontAwesome name="user" size={16} color={themeColors.text} />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o nome"
+              value={name}
+              onChangeText={setName}
+              error={
+                name && name.length > 0
+                  ? errors.includes("name")
+                    ? getErrorText("name")
+                    : ""
+                  : "Preencha com um nome"
+              }
+            ></MFTextInput>
+            <MFTextInput
+              isNumeric={true}
+              label="CPF: "
+              labelIcon={
+                <Ionicons
+                  name="document-lock"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o nome"
+              value={document}
+              onChangeText={(text: string) => {
+                if (text) {
+                  setDocument(cpfFormat(text.toString()));
+                } else {
+                  setDocument("");
+                }
+              }}
+              error={
+                document && document.length > 0
+                  ? errors.includes("document")
+                    ? getErrorText("document")
+                    : ""
+                  : "Preencha com um documento válido"
+              }
+            ></MFTextInput>
+            <MFTextInput
+              label="Apelido: "
+              labelIcon={
+                <FontAwesome
+                  name="user-secret"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o apelido"
+              value={nick}
+              onChangeText={setNick}
+              error={nick && nick.length > 0 ? "" : "Preencha com um apelido."}
+            ></MFTextInput>
+            <MFSelectInput
+              label="Gênero"
+              labelIcon={
+                <FontAwesome5
+                  name="transgender"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              selectedValue={gender || "0"}
+              onValueChange={setGender}
+              options={[{ label: "-", value: "-" }, ...MFGenders]}
+              themeColors={Colors[theme]}
+              isDisabled={false}
+              error={!gender || gender === "-" ? "Preencha o seu gênero." : ""}
+            />
+            <MFDateInputText2
+              label="Data de Nascimento"
+              labelIcon={
+                <FontAwesome
+                  name="birthday-cake"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              value={birthDate || ""}
+              onChange={setBirthDate}
+              error={birthDate ? "" : "Preencha com a Data de Nascimento."}
+              themeColors={themeColors}
+            />
+            <MFLongTextInput
+              label="Sobre mim: "
+              labelIcon={
+                <FontAwesome
+                  name="paragraph"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite aqui"
+              value={description}
+              onChangeText={setDescription}
+              error={description ? "" : "Escreva um pouco sobre você."}
+            ></MFLongTextInput>
+            <View style={{ height: 50 }}></View>
+            <MFStackEditSubtitle
+              themeColors={themeColors}
+              title="Dados de contato"
+              align="right"
+              info="Dados de contato, para diversas interações."
+            ></MFStackEditSubtitle>
+            <MFTextInput
+              isDisabled={true}
+              label="E-mail: "
+              labelIcon={
+                <MaterialIcons
+                  name="email"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o e-mail"
+              value={email}
+            ></MFTextInput>
+            <MFTextInput
+              label="Whatsapp: "
+              isNumeric={true}
+              labelIcon={
+                <FontAwesome5
+                  name="whatsapp-square"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o whatsapp"
+              value={phone}
+              onChangeText={(text: string) => {
+                if (text) {
+                  setPhone(phoneFormat(text.toString()));
+                } else {
+                  setPhone("");
+                }
+              }}
+              error={
+                phone && phone.length > 0
+                  ? errors.includes("phone")
+                    ? getErrorText("phone")
+                    : ""
+                  : "Preencha com o Whatsapp."
+              }
+            ></MFTextInput>
+            <MFTextInput
+              label="Instagram: "
+              labelIcon={
+                <Entypo
+                  name="instagram-with-circle"
+                  size={16}
+                  color={themeColors.text}
+                />
+              }
+              themeColors={themeColors}
+              placeholder="Digite o e-mail"
+              value={instagram}
+              onChangeText={setInstagram}
+              error={instagram ? "" : "Preencha com o Instagram."}
+            ></MFTextInput>
+            <View style={{ height: 50 }}></View>
+          </View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

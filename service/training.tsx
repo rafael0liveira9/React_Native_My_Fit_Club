@@ -1,4 +1,9 @@
-import { Serie, Training } from "@/model/training";
+import {
+  EvaluationUpdate,
+  ExerciseExecution,
+  Serie,
+  Training,
+} from "@/model/training";
 import axios from "axios";
 
 const API_URL = "https://node-api-my-fit.vercel.app";
@@ -15,8 +20,36 @@ export async function getTrainingById({
     if (!API_URL) {
       throw new Error("API URL não encontrada no extra do app.json.");
     }
-
     const response = await axios.get(`${API_URL}/training/${id}`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function getExecutionById({
+  token,
+  id,
+}: {
+  token: string;
+  id: string;
+}) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+    const response = await axios.get(`${API_URL}/execution/${id}`, {
       headers: {
         Authorization: token,
       },
@@ -121,6 +154,36 @@ export async function EditTraining({
         level,
         url,
         photo,
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.log("response", error);
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function UnassignTraining({ id, token }: Training) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+    const response = await axios.put(
+      `${API_URL}/unassign-training`,
+      {
+        id,
       },
       {
         headers: {
@@ -276,44 +339,6 @@ export async function getExercisesByGroup({
   }
 }
 
-// export async function CreateStep({
-//   name,
-//   description,
-//   trainingId,
-//   token,
-// }: Training) {
-//   try {
-//     if (!API_URL) {
-//       throw new Error("API URL não encontrada no extra do app.json.");
-//     }
-
-//     const response = await axios.post(
-//       `${API_URL}/step`,
-
-//       {
-//         name: name,
-//         description: description,
-//         trainingId: trainingId,
-//       },
-//       {
-//         headers: {
-//           Authorization: token,
-//         },
-//       }
-//     );
-
-//     return response.data;
-//   } catch (error: any) {
-//     return {
-//       status: error?.status,
-//       message:
-//         error?.response?.data?.message ||
-//         error.message ||
-//         "Ocorreu um erro desconhecido.",
-//     };
-//   }
-// }
-
 export async function CreateSerie({
   trainingId,
   serieId,
@@ -335,7 +360,6 @@ export async function CreateSerie({
     let response;
 
     if (serieId) {
-      console.log("1");
       response = await axios.put(
         `${API_URL}/serie`,
 
@@ -357,7 +381,6 @@ export async function CreateSerie({
         }
       );
     } else {
-      console.log("2");
       response = await axios.post(
         `${API_URL}/serie`,
 
@@ -379,7 +402,6 @@ export async function CreateSerie({
         }
       );
     }
-    console.log(response.data);
     return response.data;
   } catch (error: any) {
     console.log(error);
@@ -390,5 +412,175 @@ export async function CreateSerie({
         error.message ||
         "Ocorreu um erro desconhecido.",
     };
+  }
+}
+
+export async function TrainingExecute({ trainingId, token }: Serie) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    let response;
+
+    if (trainingId) {
+      response = await axios.post(
+        `${API_URL}/execution-training`,
+
+        {
+          trainingId: trainingId,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+    }
+
+    if (response) return response;
+  } catch (error: any) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function FinishTraining({
+  executionId,
+  evaluation,
+  observation,
+  token,
+}: {
+  executionId: number;
+  evaluation: number | null;
+  observation: string | null;
+  token: string;
+}) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    let response;
+
+    if (executionId) {
+      response = await axios.put(
+        `${API_URL}/complete-execution-training`,
+
+        {
+          executionId: executionId,
+          evaluation: evaluation,
+          observation: observation,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+    }
+    if (response) return response;
+  } catch (error: any) {
+    console.log(error);
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function ExerciseFinish({
+  exerciseId,
+  executionId,
+  difficulty,
+  token,
+}: ExerciseExecution) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    let response;
+
+    if (exerciseId && executionId && difficulty && token) {
+      response = await axios.post(
+        `${API_URL}/execution-exercise`,
+
+        {
+          exerciseId: exerciseId,
+          executionId: executionId,
+          difficulty: difficulty,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+    }
+
+    if (response) return response;
+  } catch (error: any) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function NewEvaluationUpdate({
+  id,
+  evaluation,
+  observation,
+  token,
+}: EvaluationUpdate) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    let response;
+
+    if (id && evaluation && token) {
+      response = await axios.put(
+        `${API_URL}/evaluation-update`,
+
+        {
+          id: id,
+          evaluation: evaluation,
+          observation: observation ? observation : "",
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+    }
+
+    if (response) return response;
+  } catch (error: any) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function GetLastExecution({ token }: EvaluationUpdate) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    const response = await axios.get(`${API_URL}/last-execution/`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response;
+  } catch (error: any) {
+    console.log(error);
+    return error;
   }
 }

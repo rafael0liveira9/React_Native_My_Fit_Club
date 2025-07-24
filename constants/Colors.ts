@@ -3,10 +3,12 @@
 
 const moreColors = {
   primary: '#FF3131',
+  successContrast: '#1E97320F',
   primaryContrast: '#6F1D1DFF', 
   primaryOpacity: '#FE9393DA', 
+  orange : '#FFAE00FF',
   danger: '#B02020FF',
-  warning: '#B8B01FFF',
+  warning: '#FFD700',
   default: '#ECEDEE',
   success: '#1E9732FF',
   info: '#003984FF',
@@ -20,6 +22,7 @@ export const Colors = {
     text: '#101010',
     textSecondary: '#333333',
     background: '#ffffff',
+    backgroundSecondary: '#F5FFECFF',
     tint: '#FF3131',
     secondary: '#fafafa',
         themeGrey: '#aaaaaa',
@@ -28,9 +31,10 @@ export const Colors = {
   dark: {
     text: '#fafafa',
     textSecondary: '#cacaca',
-    background: '#1a1a1a',
+    backgroundSecondary: '#242822FF',
+    background: '#000000',
     tint: '#FF3131',
-    secondary: '#222222',
+    secondary: '#111111',
     themeGrey: '#777777',
     ...moreColors
   }

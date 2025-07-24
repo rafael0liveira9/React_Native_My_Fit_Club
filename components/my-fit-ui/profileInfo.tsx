@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 30,
+    zIndex: 9,
   },
   box: {
     width: "100%",

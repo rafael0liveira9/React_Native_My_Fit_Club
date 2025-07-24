@@ -18,7 +18,7 @@ export default function SplashScreen() {
           height: 120,
           objectFit: "contain",
         }}
-        source={require(`@/assets/images/my-fit/logo-fundo-vermelho.png`)}
+        source={require(`@/assets/images/my-fit/logo/my_fit_club_v_br.png`)}
       />
       <ActivityIndicator size={40} color="#ffffff" />
     </View>

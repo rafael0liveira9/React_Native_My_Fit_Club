@@ -10,11 +10,13 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { login } from "@/service/user";
 import { authStyles } from "@/styles/auth";
+import { globalStyles } from "@/styles/global";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import {
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -40,6 +42,7 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
+    Keyboard.dismiss();
     const res = await login({ email, password });
 
     if (res?.user) {
@@ -88,26 +91,44 @@ export default function LoginScreen() {
       ]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={authStyles.imageBox}>
-        <Image
-          style={authStyles.mflogo}
-          source={
-            theme === "dark"
-              ? require(`@/assets/images/my-fit/logo-fundo-preto.png`)
-              : require(`@/assets/images/my-fit/logo-fundo-branco.png`)
-          }
-        />
-      </View>
-
       <MFDefaultCard themeColors={themeColors}>
-        <Text style={[authStyles.title, { color: themeColors.text }]}>
-          Bem-vindo 👋<HelloWave></HelloWave>
-        </Text>
-        <Text
-          style={[authStyles.subtitle, { color: themeColors.textSecondary }]}
+        <View
+          style={[
+            authStyles.imageBox,
+            {
+              paddingBottom: 10,
+            },
+          ]}
         >
-          Entre com sua conta
-        </Text>
+          <Image
+            style={authStyles.mflogo}
+            source={
+              theme === "dark"
+                ? require(`@/assets/images/my-fit/logo/my_fit_club_v_r.png`)
+                : require(`@/assets/images/my-fit/logo/my_fit_club_v_br.png`)
+            }
+          />
+        </View>
+        <View
+          style={[
+            globalStyles.flexc,
+            {
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "flex-start",
+            },
+          ]}
+        >
+          <Text style={[authStyles.title, { color: themeColors.text }]}>
+            Bem-vindo 👋<HelloWave></HelloWave>
+          </Text>
+          <Text
+            style={[authStyles.subtitle, { color: themeColors.textSecondary }]}
+          >
+            Entre com sua conta!
+          </Text>
+        </View>
+
         <MFTextInput
           themeColors={themeColors}
           placeholder="E-mail..."
