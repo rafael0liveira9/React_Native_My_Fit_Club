@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import HeaderPopUp from "./headerInfoPop";
-import { MFDefaultModal, MFLogoutModal } from "./modal";
+import { MFDefaultInfoModal, MFLogoutModal } from "./modal";
 
 export default function MFMainHeader({
   themeColors,
@@ -127,7 +127,7 @@ export default function MFMainHeader({
         />
       </View>
       {isOpen && (
-        <MFDefaultModal
+        <MFDefaultInfoModal
           themeColors={themeColors}
           close={() => setIsOpen(false)}
           warningVisible={isOpen}
@@ -143,7 +143,7 @@ export default function MFMainHeader({
             onOpenWarning={onOpenWarning}
             faq={faq}
           ></HeaderPopUp>
-        </MFDefaultModal>
+        </MFDefaultInfoModal>
       )}
       <TouchableOpacity
         onPress={() => router.push("/(stack)/profile/page")}

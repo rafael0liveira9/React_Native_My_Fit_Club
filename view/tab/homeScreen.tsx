@@ -1,4 +1,6 @@
+import { MFPrimaryButton } from "@/components/my-fit-ui/buttons";
 import {
+  MFAdmimPostCard,
   MFCreatePostCard,
   MFMyPostCard,
   MFPostCard,
@@ -28,6 +30,7 @@ import {
   Animated,
   Dimensions,
   findNodeHandle,
+  Image,
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -262,7 +265,6 @@ export default function HomeScren() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [5, 4],
       quality: 1,
     });
 
@@ -302,7 +304,6 @@ export default function HomeScren() {
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [5, 4],
       quality: 1,
     });
 
@@ -611,8 +612,7 @@ export default function HomeScren() {
               />
             }
           >
-            {!!lastExecution?.todayTraining &&
-            lastExecution?.todayTraining === false ? (
+            {!lastExecution?.todayTraining ? (
               <>
                 <View
                   style={{ padding: 20, paddingBottom: 10 }}
@@ -633,7 +633,7 @@ export default function HomeScren() {
                   </Text>
                 </View>
 
-                {assign && (
+                {!!assign && Array.isArray(assign) && assign.length > 0 ? (
                   <Carousel
                     loop
                     width={width}
@@ -668,6 +668,44 @@ export default function HomeScren() {
                       paddingHorizontal: OFFSET,
                     }}
                   />
+                ) : (
+                  <View
+                    style={[
+                      trainingStyles.noTrainingBox,
+                      {
+                        shadowColor: themeColors.text,
+                        backgroundColor: themeColors.backgroundSecondary,
+                      },
+                    ]}
+                  >
+                    <Image
+                      style={trainingStyles.fitinhoImage}
+                      source={
+                        user?.client.gender === 2
+                          ? require(`@/assets/images/my-fit/fitinho_fem.png`)
+                          : require(`@/assets/images/my-fit/fitinho_masc.png`)
+                      }
+                    />
+                    <View
+                      style={[globalStyles.flexc, { width: "55%", gap: 20 }]}
+                    >
+                      <Text
+                        style={{
+                          color: themeColors.text,
+                          textAlign: "center",
+                          fontSize: 20,
+                        }}
+                      >
+                        Você não possui nenhum programa de treinamento.
+                      </Text>
+                      <MFPrimaryButton
+                        themeColors={themeColors}
+                        onPress={() => router.push("/(tabs)/shop")}
+                        title="Adicionar"
+                        isWhiteDetails={true}
+                      ></MFPrimaryButton>
+                    </View>
+                  </View>
                 )}
               </>
             ) : (
@@ -760,7 +798,13 @@ export default function HomeScren() {
               posts
                 .filter((e, y) => y <= 3)
                 .map((e: any, y: number) => {
-                  if (e.client.id === user?.client?.id) {
+                  if (e.client.userType === 1) {
+                    return (
+                      <View key={`post-${e.id}`}>
+                        <MFAdmimPostCard themeColors={themeColors} data={e} />
+                      </View>
+                    );
+                  } else if (e.client.id === user?.client?.id) {
                     if (tempDel.includes(e.id)) return null;
                     return (
                       <View key={`post-${e.id}`}>
@@ -776,7 +820,8 @@ export default function HomeScren() {
                         />
                       </View>
                     );
-                  } else {
+                  }
+                  {
                     return (
                       <View key={`post-${e.id}`}>
                         <MFPostCard themeColors={themeColors} data={e} />

@@ -1,5 +1,5 @@
 📜 Política de Privacidade – My Fit Club
-Última atualização: [24 de julho de 2025]
+Última atualização: 24 de julho de 2025
 
 A sua privacidade é importante para nós. Esta Política de Privacidade explica como o My Fit Club, aplicativo desenvolvido por Rafael Mariano de Oliveira, coleta, utiliza, armazena e protege as informações dos seus usuários.
 
@@ -85,3 +85,18 @@ Podemos atualizar esta Política de tempos em tempos. Recomendamos que você a r
 Se você tiver qualquer dúvida, sugestão ou solicitação sobre esta Política de Privacidade, entre em contato:
 
 📧 rafael.oliveira@casapino.com.br
+
+10. Exclusão de dados pessoais
+Você pode solicitar a exclusão completa dos seus dados a qualquer momento.
+
+Para isso, envie um e-mail para rafael.oliveira@casapino.com.br com as seguintes informações obrigatórias:
+
+Nome completo utilizado na conta;
+
+E-mail cadastrado no aplicativo;
+
+(Opcional) Quaisquer outras informações que nos ajudem a identificar a conta corretamente.
+
+Após o recebimento do pedido, todos os dados associados à conta serão permanentemente excluídos em até 48 horas.
+
+Essa exclusão é irreversível e inclui dados de login, perfil, treinos personalizados, histórico de uso e qualquer outra informação associada ao usuário.

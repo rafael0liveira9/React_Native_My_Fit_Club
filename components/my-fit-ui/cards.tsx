@@ -66,6 +66,12 @@ interface MFExerciseExecuteCardProps extends ViewProps {
   next?: number;
 }
 
+interface MFShopCardTrainingProps extends ViewProps {
+  themeColors?: any;
+  data?: any;
+  onPress?: () => void;
+}
+
 export function MFTrainingExecutionCard({
   isNew,
   GoToExecution,
@@ -1241,7 +1247,7 @@ export function MFClockExecute({
   );
 }
 
-export default function MFTrainingInfoCard({
+export function MFTrainingInfoCard({
   themeColors,
   data,
   NewEvaluationTrainingHandle,
@@ -1862,6 +1868,178 @@ export function MFPostCard({
             }}
           >
             <Text style={[styles.authorNamePost, { color: themeColors.text }]}>
+              {client.nick ? client.nick : client.name}
+            </Text>
+            {client?.userType && client?.userType === 1 && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <Image
+                  source={require("@/assets/images/my-fit/icon-mfc.png")}
+                  style={[
+                    styles.adminImagePost,
+                    { borderColor: themeColors.grey, padding: 2 },
+                  ]}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+            {client?.userType &&
+              (client?.userType === 3 || client?.userType === 4) && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="workspace-premium"
+                    size={18}
+                    color={
+                      client?.userType === 3
+                        ? themeColors.orange
+                        : client?.userType === 4
+                        ? themeColors.primary
+                        : "black"
+                    }
+                  />
+                </View>
+              )}
+            {client?.cref && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    backgroundColor: themeColors.white,
+                    borderColor: themeColors.grey,
+                    borderWidth: 1,
+                    alignItems: "center",
+                    paddingHorizontal: 7,
+                    borderRadius: 5,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#105661",
+                  }}
+                >
+                  Cr
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#3F9933",
+                  }}
+                >
+                  ef
+                </Text>
+                <FontAwesome
+                  style={{ marginLeft: 5 }}
+                  name="check-circle"
+                  size={14}
+                  color={themeColors.success}
+                />
+              </View>
+            )}
+          </View>
+          {!!createdAt || !!updatedAt ? (
+            <Text style={[styles.datePost, { color: themeColors.themeGrey }]}>
+              {updatedAt
+                ? `editado ${formatTimeAgo(updatedAt)}`
+                : formatTimeAgo(createdAt)}
+              {"  "}
+              <FontAwesome5
+                name="clock"
+                size={12}
+                color={themeColors.themeGrey}
+              />
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      <View style={styles.bodyPost}>
+        {title && (
+          <Text style={[styles.titlePost, { color: themeColors.text }]}>
+            {title}
+          </Text>
+        )}
+        {description && (
+          <Text style={[styles.descriptionPost, , { color: themeColors.text }]}>
+            {description}
+          </Text>
+        )}
+        {image && (
+          <Image
+            source={{ uri: image }}
+            style={styles.postImagePost}
+            resizeMode="cover"
+          />
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function MFAdmimPostCard({
+  themeColors,
+  data,
+}: {
+  themeColors: any;
+  data: any;
+}) {
+  const { title, description, image, createdAt, updatedAt, client } = data;
+
+  return (
+    <View
+      style={[
+        styles.cardPost,
+        {
+          backgroundColor: themeColors.secondary,
+          borderTopWidth: 1,
+          borderTopColor: themeColors.primaryOpacity,
+          borderBottomWidth: 1,
+          borderBottomColor: themeColors.primaryOpacity,
+          borderStyle: "dashed",
+        },
+      ]}
+    >
+      <View style={styles.headerPost}>
+        <Image
+          source={{ uri: client?.photo }}
+          style={[
+            styles.avatarPost,
+            { borderWidth: 3, borderColor: themeColors.primary },
+          ]}
+        />
+        <View style={styles.authorInfoPost}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 2,
+            }}
+          >
+            <Text
+              style={[
+                styles.authorNamePost,
+                { color: themeColors.primary, fontWeight: 900 },
+              ]}
+            >
               {client.nick ? client.nick : client.name}
             </Text>
             {client?.userType && client?.userType === 1 && (
@@ -2670,6 +2848,214 @@ export function MFCreatePostCard({
   );
 }
 
+export function MFShopTrainingCard({
+  themeColors,
+  data,
+  onPress,
+}: MFShopCardTrainingProps) {
+  const { training, value, discount } = data;
+
+  const averageEvaluation =
+    training.trainingEvaluations.length > 0
+      ? (
+          training.trainingEvaluations.reduce(
+            (acc: any, cur: any) => acc + cur.evaluation,
+            0
+          ) / training.trainingEvaluations.length
+        ).toFixed(1)
+      : "N/A";
+
+  const finalPrice =
+    discount > 0 ? (value - discount).toFixed(2) : value.toFixed(2);
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.shopTrainingCard,
+        {
+          backgroundColor: themeColors.secondary,
+          shadowColor: themeColors.text,
+          position: "relative",
+        },
+      ]}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
+      <Image
+        source={{ uri: training.photo }}
+        style={styles.shopTrainingImage}
+      />
+      <View style={styles.shopTrainingInfo}>
+        <Text style={[styles.shopTrainingTitle, { color: themeColors.text }]}>
+          {training.name}
+        </Text>
+        <View
+          style={[
+            globalStyles.flexr,
+            {
+              alignItems: "center",
+              justifyContent: "flex-start",
+              flexWrap: "wrap",
+              marginBottom: 15,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.shopTrainingDescription,
+              { color: themeColors.text, fontWeight: "400" },
+            ]}
+            numberOfLines={2}
+          >
+            Criado por:{" "}
+          </Text>
+          <View
+            style={[
+              globalStyles.flexr,
+              {
+                alignItems: "center",
+                justifyContent: "flex-start",
+                flexWrap: "nowrap",
+              },
+            ]}
+          >
+            <Text
+              style={[styles.shopTrainingDescription, { fontWeight: "900" }]}
+            >
+              {training.user.nick ? training.user.nick : training.user.name}
+            </Text>
+            {training?.user?.cref && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    backgroundColor: themeColors.white,
+                    borderColor: themeColors.grey,
+                    borderWidth: 1,
+                    alignItems: "center",
+                    paddingHorizontal: 7,
+                    borderRadius: 5,
+                    marginLeft: 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "900",
+                    color: "#105661",
+                  }}
+                >
+                  Cr
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "900",
+                    color: "#3F9933",
+                  }}
+                >
+                  ef
+                </Text>
+                <FontAwesome
+                  style={{ marginLeft: 5 }}
+                  name="check-circle"
+                  size={11}
+                  color={themeColors.success}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+      <View
+        style={[
+          styles.shopTrainingRow,
+          { position: "absolute", top: 7, right: 7, gap: 10 },
+        ]}
+      >
+        <View
+          style={[
+            styles.shopTrainingRating,
+            { backgroundColor: themeColors.warning },
+          ]}
+        >
+          <Text
+            style={[
+              styles.shopTrainingRatingText,
+              { color: themeColors.black },
+            ]}
+          >
+            <AntDesign name="star" size={14} color={themeColors.black} />{" "}
+            {averageEvaluation}
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.shopTrainingRating,
+            {
+              backgroundColor: getLevel({ level: +data.training.level })
+                ?.BCcolor,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.shopTrainingRatingText,
+              { color: getLevel({ level: +data.training.level })?.FColor },
+            ]}
+          >
+            {getLevel({ level: +data.training.level })?.name}
+          </Text>
+        </View>
+      </View>
+      <View
+        style={[
+          styles.shopTrainingPriceContainer,
+          { position: "absolute", bottom: 10, right: 15 },
+        ]}
+      >
+        {finalPrice > 0 ? (
+          <>
+            {discount > 0 && (
+              <Text
+                style={[
+                  styles.shopTrainingOldPrice,
+                  { color: themeColors.themeGrey },
+                ]}
+              >
+                R$ {value.toFixed(2).replace(".", ",")}
+              </Text>
+            )}
+            <Text
+              style={[styles.shopTrainingPrice, { color: themeColors.primary }]}
+            >
+              R$ {finalPrice.replace(".", ",")}
+            </Text>
+          </>
+        ) : (
+          <View
+            style={[
+              styles.MFFreePrice,
+              { backgroundColor: themeColors.success },
+            ]}
+          >
+            <Text
+              style={{
+                color: themeColors.white,
+                fontSize: 14,
+                fontWeight: 900,
+              }}
+            >
+              GRATIS
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   box: {
     width: "100%",
@@ -3126,5 +3512,63 @@ const styles = StyleSheet.create({
   postContent: {
     width: "100%",
     gap: 15,
+  },
+  shopTrainingCard: {
+    width: "45%",
+    height: 260,
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  shopTrainingImage: {
+    width: "100%",
+    height: 140,
+  },
+  shopTrainingInfo: {
+    padding: 12,
+  },
+  shopTrainingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
+    marginBottom: 4,
+  },
+  shopTrainingDescription: {
+    fontSize: 14,
+  },
+  shopTrainingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  shopTrainingRating: {
+    backgroundColor: "#FFD700",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+  },
+  shopTrainingRatingText: {
+    fontWeight: "600",
+    color: "#333",
+  },
+  shopTrainingPriceContainer: {
+    alignItems: "flex-end",
+  },
+  shopTrainingOldPrice: {
+    fontSize: 13,
+    textDecorationLine: "line-through",
+  },
+  shopTrainingPrice: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  MFFreePrice: {
+    borderRadius: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    marginRight: -5,
   },
 });

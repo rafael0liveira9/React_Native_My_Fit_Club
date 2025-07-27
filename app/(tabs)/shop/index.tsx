@@ -1,5 +1,5 @@
-import NewTrainingScreen from "@/view/stack/newTrainingScreen";
+import ShopScreen from "@/view/stack/shopScreen";
 
 export default function Shop() {
-  return <NewTrainingScreen></NewTrainingScreen>;
+  return <ShopScreen></ShopScreen>;
 }

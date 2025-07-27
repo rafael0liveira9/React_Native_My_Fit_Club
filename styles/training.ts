@@ -13,7 +13,15 @@ export const trainingStyles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
-        alignContent:'center'
+        alignContent: 'center',
+        gap: 20,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    fitinhoImage: {
+        width: '30%',
+        height:200
     },
     listBox: {
         width: '100%',

@@ -110,14 +110,16 @@ export default function ProfileScreen() {
       alert("Você precisa permitir acesso à galeria!");
       return;
     }
-    setIsLoading(true);
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
+      aspect: mediaType === 1 ? [2, 2] : [5, 4],
       quality: 1,
     });
 
     if (!result.canceled) {
+      setIsLoading(true);
       const selectedAsset = result.assets[0];
       const token = await SecureStore.getItemAsync("userToken");
       const name = selectedAsset.uri.split("/").pop() || "photo.jpg";
@@ -132,7 +134,11 @@ export default function ProfileScreen() {
       if (file && token) {
         let response;
         if (mediaType === 1) {
-          response = await updatePhoto(file, "fake-club", token);
+          response = await updatePhoto(
+            file,
+            `/client/${user?.id ? user?.id : "0"}`,
+            token
+          );
           const x = {
             ...user,
             client: {
@@ -141,9 +147,19 @@ export default function ProfileScreen() {
             },
             type: user?.type ?? { id: 2, name: "" },
           };
-          setUser(x);
+          if (!!response && !!x) {
+            Toast.show({
+              type: "success",
+              text1: `✅ Imagem inserida com sucesso.`,
+            });
+            setUser(x);
+          }
         } else {
-          response = await updateBackground(file, "fake-club", token);
+          response = await updateBackground(
+            file,
+            `/client/${user?.id ? user?.id : "0"}`,
+            token
+          );
           const x = {
             ...user,
             client: {
@@ -152,17 +168,19 @@ export default function ProfileScreen() {
             },
             type: user?.type ?? { id: 2, name: "" },
           };
-          setUser(x);
+          if (!!response && !!x) {
+            Toast.show({
+              type: "success",
+              text1: `✅ Imagem inserida com sucesso.`,
+            });
+            setUser(x);
+          }
         }
         setIsLoading(false);
         setMediaSelectorVisible(false);
       }
     }
     setMediaSelectorVisible(false);
-    Toast.show({
-      type: "success",
-      text1: `✅ Imagem inserida com sucesso.`,
-    });
   }
 
   async function openCamera() {
@@ -175,6 +193,7 @@ export default function ProfileScreen() {
     setIsLoading(true);
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
+      aspect: mediaType === 1 ? [2, 2] : [5, 4],
       quality: 1,
     });
 
@@ -193,7 +212,11 @@ export default function ProfileScreen() {
       if (file && token) {
         let response;
         if (mediaType === 1) {
-          response = await updatePhoto(file, "fake-club", token);
+          response = await updatePhoto(
+            file,
+            `/client/${user?.id ? user?.id : "0"}`,
+            token
+          );
           const x = {
             ...user,
             client: {
@@ -204,7 +227,11 @@ export default function ProfileScreen() {
           };
           setUser(x);
         } else {
-          response = await updateBackground(file, "fake-club", token);
+          response = await updateBackground(
+            file,
+            `/client/${user?.id ? user?.id : "0"}`,
+            token
+          );
           const x = {
             ...user,
             client: {
@@ -237,7 +264,7 @@ export default function ProfileScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [5, 4],
+      aspect: [2, 2],
       quality: 1,
     });
 
@@ -277,7 +304,7 @@ export default function ProfileScreen() {
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [5, 4],
+      aspect: [2, 2],
       quality: 1,
     });
 

@@ -165,7 +165,7 @@ export default function EditProfileScreen() {
           });
 
           setIsSaveLoading(false);
-          router.replace("/(tabs)/profile");
+          router.replace("/(stack)/profile/page");
         } else {
           Toast.show({
             type: "error",

@@ -1,7 +1,5 @@
-import {
-  MFPlusCard,
-  MFTrainingExecutionCard,
-} from "@/components/my-fit-ui/cards";
+import { MFPrimaryButton } from "@/components/my-fit-ui/buttons";
+import { MFTrainingExecutionCard } from "@/components/my-fit-ui/cards";
 import { MFLogoutModal } from "@/components/my-fit-ui/modal";
 import MFSeparator from "@/components/my-fit-ui/separator";
 import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
@@ -15,18 +13,12 @@ import {
   UnassignTraining,
 } from "@/service/training";
 import { getMyData } from "@/service/user";
+import { globalStyles } from "@/styles/global";
 import { trainingStyles } from "@/styles/training";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Image, ScrollView, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function TrainingScreen() {
@@ -237,7 +229,7 @@ export default function TrainingScreen() {
               info="Lista de terinos que ja estão atribuidos e prontos para executar."
             ></MFStackEditSubtitle>
             <View style={{ height: 30 }}></View>
-            {assign ? (
+            {assign && Array.isArray(assign) && assign.length > 0 ? (
               assign?.map((e: any, y: number) => {
                 const isNew =
                   !e.training?.trainingExecution ||
@@ -275,32 +267,60 @@ export default function TrainingScreen() {
                 );
               })
             ) : (
-              <View style={trainingStyles.noTrainingBox}>
-                <Text style={{ color: themeColors.text }}>
-                  Você não possui, pressione para adicionar.
-                </Text>
+              <View
+                style={[
+                  trainingStyles.noTrainingBox,
+                  {
+                    shadowColor: themeColors.text,
+                    backgroundColor: themeColors.backgroundSecondary,
+                  },
+                ]}
+              >
+                <Image
+                  style={trainingStyles.fitinhoImage}
+                  source={
+                    user?.client.gender === 2
+                      ? require(`@/assets/images/my-fit/fitinho_fem.png`)
+                      : require(`@/assets/images/my-fit/fitinho_masc.png`)
+                  }
+                />
+                <View style={[globalStyles.flexc, { width: "55%", gap: 20 }]}>
+                  <Text
+                    style={{
+                      color: themeColors.text,
+                      textAlign: "center",
+                      fontSize: 20,
+                    }}
+                  >
+                    Você não possui nenhum programa de treinamento.
+                  </Text>
+                  <MFPrimaryButton
+                    themeColors={themeColors}
+                    onPress={() => router.push("/(tabs)/shop")}
+                    title="Adicionar"
+                    isWhiteDetails={true}
+                  ></MFPrimaryButton>
+                </View>
               </View>
             )}
-            <View
-              style={[
-                trainingStyles.noTrainingBox,
-                { height: 100, marginBottom: 30 },
-              ]}
-            >
-              <Text style={{ color: themeColors.text }}>
-                Você não possui mais treinos.
-              </Text>
-            </View>
+            {assign && Array.isArray(assign) && assign.length > 0 && (
+              <>
+                <View style={[globalStyles.flexr, { height: 100 }]}>
+                  <Text style={{ color: themeColors.text }}>
+                    Você não possui mais treinos.
+                  </Text>
+                </View>
+                <View style={{ marginBottom: 70, paddingHorizontal: "10%" }}>
+                  <MFPrimaryButton
+                    themeColors={themeColors}
+                    onPress={() => router.push("/(tabs)/shop")}
+                    title="Adicionar"
+                    isWhiteDetails={true}
+                  ></MFPrimaryButton>
+                </View>
+              </>
+            )}
           </ScrollView>
-          <TouchableOpacity onPress={() => router.push("/(stack)/training")}>
-            <MFPlusCard themeColors={themeColors}>
-              <AntDesign
-                name="pluscircleo"
-                size={24}
-                color={themeColors.themeGrey}
-              />
-            </MFPlusCard>
-          </TouchableOpacity>
         </View>
       )}
     </View>

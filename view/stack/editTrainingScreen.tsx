@@ -137,6 +137,7 @@ export default function EditTrainingScreen() {
     setIsLoading(true);
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      aspect: [5, 4],
       allowsEditing: true,
       quality: 1,
     });
@@ -181,6 +182,7 @@ export default function EditTrainingScreen() {
     setIsLoading(true);
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
+      aspect: [5, 4],
       quality: 1,
     });
 

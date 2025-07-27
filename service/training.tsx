@@ -175,6 +175,45 @@ export async function EditTraining({
   }
 }
 
+export async function AssignTraining({
+  trainingId,
+  clientId,
+  token,
+}: {
+  trainingId: number;
+  clientId: number;
+  token: string;
+}) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+    const response = await axios.post(
+      `${API_URL}/assign-training`,
+      {
+        trainingId,
+        clientId,
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.log("response", error);
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
 export async function UnassignTraining({ id, token }: Training) {
   try {
     if (!API_URL) {
@@ -582,5 +621,59 @@ export async function GetLastExecution({ token }: EvaluationUpdate) {
   } catch (error: any) {
     console.log(error);
     return error;
+  }
+}
+
+export async function getShop({ token }: { token: string }) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    const response = await axios.get(`${API_URL}/shop`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function getTrainingShopById({
+  token,
+  id,
+}: {
+  token: string;
+  id: number;
+}) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    const response = await axios.get(`${API_URL}/shop/training/${id}`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
   }
 }

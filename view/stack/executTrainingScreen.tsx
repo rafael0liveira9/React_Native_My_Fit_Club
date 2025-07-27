@@ -1,6 +1,7 @@
 import { showConfetti } from "@/components/my-fit-ui/animations";
-import MFTrainingInfoCard, {
+import {
   MFClockExecute,
+  MFTrainingInfoCard,
 } from "@/components/my-fit-ui/cards";
 import { MFTrainingExecutionView } from "@/components/my-fit-ui/execution";
 import {

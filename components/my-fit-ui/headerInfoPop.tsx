@@ -44,8 +44,10 @@ export default function HeaderPopUp({
   const [opennedFaq, setOppenedFaq] = useState<number | null>(null),
     appName = Constants.expoConfig?.name,
     appVersion = Constants.expoConfig?.version,
-    appVersionStatus = "alfa",
+    appVersionStatus = "",
     createdBy = "BAY Digital Services",
+    policyPrivacy =
+      "https://github.com/rafael0liveira9/React_Native_My_Fit_Club/blob/master/privacy-policy.txt",
     createdByUrl = "https://www.linkedin.com/in/rafael-oliveira-18934a160/";
 
   return (
@@ -183,6 +185,26 @@ export default function HeaderPopUp({
                           : themeColors.primary
                       }
                     />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(policyPrivacy)}
+                    style={[
+                      globalStyles.flexr,
+                      { gap: 20, justifyContent: "flex-start" },
+                    ]}
+                  >
+                    <Feather name="link" size={16} color={themeColors.text} />
+                    <Text
+                      style={{
+                        color: themeColors.info,
+                        fontSize: 16,
+                        textDecorationLine: "underline",
+                        textDecorationStyle: "solid",
+                      }}
+                    >
+                      {" "}
+                      Politica de Privacidade{" "}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>

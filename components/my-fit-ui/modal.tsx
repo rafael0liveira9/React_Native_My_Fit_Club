@@ -908,6 +908,24 @@ export function MFDefaultModal({
     </Modal>
   );
 }
+export function MFDefaultInfoModal({
+  warningVisible,
+  themeColors,
+  text,
+  onPress,
+  close,
+  isLoading,
+  children,
+  ...props
+}: MFLoginProps) {
+  return (
+    <Modal visible={warningVisible} animationType="slide" transparent={true}>
+      <Pressable style={styles.containerInfo} onPress={() => close()}>
+        {children}
+      </Pressable>
+    </Modal>
+  );
+}
 
 const styles = StyleSheet.create({
   containerYT: { marginTop: 50, alignItems: "center" },
@@ -928,6 +946,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   container: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 30,
+  },
+  containerInfo: {
     flex: 1,
     display: "flex",
     justifyContent: "center",

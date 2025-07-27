@@ -1,15 +1,15 @@
 {
   "expo": {
     "name": "My Fit Club",
-    "slug": "my-fit-club",
+    "slug": "my-fit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/my-fit/logo/my_fit_club_v_br.png",
+    "icon": "./assets/images/my-fit/logo/logo-main.png",
     "scheme": "myfit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/my-fit/logo/my_fit_club_v_br.png",
+      "image": "./assets/images/my-fit/logo/logo-main.png",
       "resizeMode": "contain",
       "backgroundColor": "#FF3131"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/my-fit/logo/my_fit_club_v_br.png",
+        "foregroundImage": "./assets/images/my-fit/logo/logo-main.png",
         "backgroundColor": "#FF3131"
       },
       "edgeToEdgeEnabled": true,
@@ -27,14 +27,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/my-fit/logo/my_fit_club_v_br.png"
+      "favicon": "./assets/images/my-fit/logo/logo-main.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/my-fit/logo/my_fit_club_v_br.png",
+          "image": "./assets/images/my-fit/logo/logo-main.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#FF3131"
@@ -51,6 +51,6 @@
         "projectId": "a1a12f72-3e74-4ecc-bece-c6c8fc88d81e"
       }
     },
-    "owner": "BAY Digital Services"
+    "owner": "rafaopp"
   }
 }
