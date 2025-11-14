@@ -1,17 +1,10 @@
-import {
-  AntDesign,
-  Entypo,
-  Feather,
-  FontAwesome,
-  Octicons,
-} from "@expo/vector-icons";
+import { AntDesign, Feather, FontAwesome, Octicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useState } from "react";
 import {
   Linking,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -157,7 +150,7 @@ export default function HeaderPopUp({
                       {appVersionStatus} {appVersion}
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={toggleTheme}
                     style={[
                       globalStyles.flexr,
@@ -185,7 +178,7 @@ export default function HeaderPopUp({
                           : themeColors.primary
                       }
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                   <TouchableOpacity
                     onPress={() => Linking.openURL(policyPrivacy)}
                     style={[

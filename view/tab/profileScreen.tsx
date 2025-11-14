@@ -1,12 +1,15 @@
+import { MFMyFriendRequestCard } from "@/components/my-fit-ui/cards";
 import { MediaSelectorModal } from "@/components/my-fit-ui/modal";
 import MFProfileDataCard from "@/components/my-fit-ui/profileDataInfo";
 import MFProfileCard from "@/components/my-fit-ui/profileInfo";
 import MFProfilePostsCard from "@/components/my-fit-ui/profilePostsInfo";
+import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
 import MFStackHeader from "@/components/my-fit-ui/stackHeader";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { User } from "@/model/user";
 import { deletePost, getMyPosts, updatePost } from "@/service/posts";
+import { acceptFriendRequest, getAllFriendRequests } from "@/service/relations";
 import { getMyData, updateBackground, updatePhoto } from "@/service/user";
 import Constants from "expo-constants";
 import * as ImagePicker from "expo-image-picker";
@@ -23,6 +26,7 @@ export default function ProfileScreen() {
   const [isLoading, setIsLoading] = useState<boolean>(false),
     [user, setUser] = useState<User>(),
     [posts, setPosts] = useState<any>(),
+    [friendRequests, setFriendRequests] = useState<User>(),
     [mediaType, setMediaType] = useState<number>(),
     [mediaSelectorVisible, setMediaSelectorVisible] = useState<boolean>(false),
     [isCardVisible, setIsCardVisible] = useState(true),
@@ -36,6 +40,7 @@ export default function ProfileScreen() {
     [imageUrl, setImageUrl] = useState<any>(null),
     [tempDel, setTempDel] = useState<number[]>([]),
     [isPostLoading, setIsPostLoading] = useState<boolean>(false),
+    [isFrienfshipLoading, setIsFrienfshipLoading] = useState<boolean>(false),
     [unassignOpen, setUnassignOpen] = useState<boolean>(false);
 
   async function getUserData() {
@@ -47,6 +52,7 @@ export default function ProfileScreen() {
       if (y && z) {
         const data: any = await getMyData({ token: z });
         const getPosts: any = await getMyPosts({ token: z });
+        const friendData: any = await getAllFriendRequests({ token: z });
 
         setToken(z);
 
@@ -74,6 +80,10 @@ export default function ProfileScreen() {
           console.log("Nenhum usuário para recuperar");
         }
 
+        if (!!friendData) {
+          setFriendRequests(friendData);
+        }
+
         if (!!getPosts) {
           setPosts(getPosts);
         }
@@ -84,6 +94,27 @@ export default function ProfileScreen() {
       setIsLoading(false);
       return null;
     }
+  }
+
+  async function RequestNewFriend(id: number, type: number) {
+    setIsFrienfshipLoading(true);
+    let x;
+    if (type === 1) {
+      x = await acceptFriendRequest({
+        token: token!,
+        id,
+        accept: true,
+      });
+    } else {
+      x = await acceptFriendRequest({
+        token: token!,
+        id,
+        accept: false,
+      });
+    }
+    setTimeout(() => {
+      setIsFrienfshipLoading(false);
+    }, 1000);
   }
 
   function getMimeType(uri: string): string {
@@ -477,6 +508,32 @@ export default function ProfileScreen() {
               marginHorizontal: 15,
             }}
           ></View>
+          {friendRequests &&
+            Array.isArray(friendRequests) &&
+            friendRequests.length > 0 && (
+              <View style={{ marginTop: 20 }}>
+                <View style={{ paddingBottom: 20, paddingHorizontal: 15 }}>
+                  <MFStackEditSubtitle
+                    themeColors={themeColors}
+                    title="Solicitações de amizade"
+                  ></MFStackEditSubtitle>
+                </View>
+                {friendRequests.map((e: any) => (
+                  <MFMyFriendRequestCard
+                    key={e.id}
+                    themeColors={themeColors}
+                    data={e}
+                    accept={() =>
+                      RequestNewFriend(e.client_friendship_senderToclient.id, 1)
+                    }
+                    refuse={() =>
+                      RequestNewFriend(e.client_friendship_senderToclient.id, 2)
+                    }
+                    isLoading={isFrienfshipLoading}
+                  />
+                ))}
+              </View>
+            )}
           <MFProfilePostsCard
             isLoading={isLoading}
             themeColors={themeColors}

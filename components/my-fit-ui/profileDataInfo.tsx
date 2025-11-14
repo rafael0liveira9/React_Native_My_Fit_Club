@@ -68,7 +68,7 @@ export default function MFProfileDataCard({
           style={{ fontWeight: 600, fontSize: 30, color: themeColors.text }}
         >
           {user?.client?.name}{" "}
-          {user?.client?.nick && user?.client?.nick != user?.client?.name && (
+          {user?.client?.nick && user?.client?.nick !== user?.client?.name && (
             <Text
               style={{ fontWeight: 500, fontSize: 20, color: themeColors.text }}
             >

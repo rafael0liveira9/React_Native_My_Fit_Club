@@ -7,6 +7,7 @@ export interface Training {
   photo?: string;
   token?: string;
   trainingId?: number;
+  assign?: boolean;
 }
 export interface Serie {
   serieId?: number;

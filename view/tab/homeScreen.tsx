@@ -7,11 +7,18 @@ import {
   MFPubliCard,
   MFTrainingExecutionCard,
 } from "@/components/my-fit-ui/cards";
+import { FloatingContinueTrainingButtonWrapper } from "@/components/my-fit-ui/floatingButton";
 import { MFLogoutModal } from "@/components/my-fit-ui/modal";
+import { PostSkeleton, TrainingSkeleton } from "@/components/my-fit-ui/skeleton";
 import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { deletePost, getAllPosts, newPost, updatePost } from "@/service/posts";
+import {
+  acceptFriendRequest,
+  getAllMyFriends,
+  newFriendRequest,
+} from "@/service/relations";
 import {
   GetLastExecution,
   getTrainingsByToken,
@@ -60,6 +67,7 @@ export default function HomeScren() {
     [user, setUser] = useState<any>(),
     [postStatus, setPostStatus] = useState<string>("1"),
     [posts, setPosts] = useState<string | null>(),
+    [myFriends, setMyFriends] = useState<any>(),
     [postId, setPostId] = useState<number | null>(null),
     [title, setTitle] = useState<string | null>(null),
     [description, setDescription] = useState<string | null>(null),
@@ -186,6 +194,36 @@ export default function HomeScren() {
       if (y && z) {
         const data: any = await getAllPosts({ token: z });
         const MyData: any = await getMyData({ token: z });
+        const friends: any = await getAllMyFriends({ token: z });
+
+        if (!!friends) {
+          let xx = friends.friends.map((e: any) => {
+            if (!!e.sender || !!e.friend) {
+              if (MyData?.user?.client?.id !== e.sender) {
+                return e.sender;
+              }
+              if (MyData?.user?.client?.id !== e.friend) {
+                return e.friend;
+              }
+            }
+          });
+          let yy = friends.requests.map((e: any) => {
+            if (!!e.friend) {
+              if (MyData?.user?.client?.id !== e.friend) {
+                return e.friend;
+              }
+            }
+          });
+          let zz = friends.receives.map((e: any) => {
+            if (!!e.sender) {
+              if (MyData?.user?.client?.id !== e.sender) {
+                return e.sender;
+              }
+            }
+          });
+
+          setMyFriends({ friends: xx, requests: yy, receives: zz });
+        }
 
         if (!!MyData) {
           setUser({
@@ -486,6 +524,31 @@ export default function HomeScren() {
     }
   }
 
+  async function addFriendFunction({
+    friendStatus,
+    id,
+  }: {
+    friendStatus: number;
+    id: number;
+  }) {
+    switch (friendStatus) {
+      case 1:
+        await newFriendRequest({ id: id, token: token! });
+        break;
+
+      case 3:
+        await acceptFriendRequest({ id: id, token: token!, accept: false });
+        break;
+
+      case 4:
+        await acceptFriendRequest({ id: id, token: token!, accept: true });
+        break;
+
+      default:
+        break;
+    }
+  }
+
   const scrollToSubtitle = () => {
     const targetHandle = findNodeHandle(targetRef.current);
     const scrollHandle = findNodeHandle(scrollRef.current);
@@ -562,19 +625,8 @@ export default function HomeScren() {
           ></MFLogoutModal>
         </View>
       )}
-      {isLoading ? (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <ActivityIndicator size={40} color={themeColors.primary} />
-        </View>
-      ) : (
-        <View style={trainingStyles.container}>
-          <MFCreatePostCard
+      <View style={trainingStyles.container}>
+        <MFCreatePostCard
             isLoading={isPostLoading}
             themeColors={themeColors}
             HandleSendPost={HandleSendPost}
@@ -599,6 +651,33 @@ export default function HomeScren() {
             }}
           />
 
+        {isLoading ? (
+          <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[themeColors.primary]}
+                tintColor={themeColors.primary}
+              />
+            }
+          >
+            {/* Skeleton do header de treino */}
+            <View style={{ padding: 20, paddingBottom: 10 }}>
+              <PostSkeleton themeColors={themeColors} />
+            </View>
+
+            {/* Skeleton dos cards de treino */}
+            <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+              <TrainingSkeleton themeColors={themeColors} />
+            </View>
+
+            {/* Skeletons de posts */}
+            <PostSkeleton themeColors={themeColors} />
+            <PostSkeleton themeColors={themeColors} />
+            <PostSkeleton themeColors={themeColors} />
+          </ScrollView>
+        ) : (
           <ScrollView
             ref={scrollRef}
             onScroll={handleScroll}
@@ -798,6 +877,32 @@ export default function HomeScren() {
               posts
                 .filter((e, y) => y <= 3)
                 .map((e: any, y: number) => {
+                  let friendStatus = 1;
+
+                  if (
+                    !!myFriends.receives &&
+                    Array.isArray(myFriends.receives) &&
+                    myFriends.receives.includes(e.client?.id)
+                  ) {
+                    friendStatus = 4;
+                  }
+
+                  if (
+                    !!myFriends.requests &&
+                    Array.isArray(myFriends.requests) &&
+                    myFriends.requests.includes(e.client?.id)
+                  ) {
+                    friendStatus = 3;
+                  }
+
+                  if (
+                    !!myFriends.friends &&
+                    Array.isArray(myFriends.friends) &&
+                    myFriends.friends.includes(e.client?.id)
+                  ) {
+                    friendStatus = 2;
+                  }
+
                   if (e.client.userType === 1) {
                     return (
                       <View key={`post-${e.id}`}>
@@ -820,11 +925,20 @@ export default function HomeScren() {
                         />
                       </View>
                     );
-                  }
-                  {
+                  } else {
                     return (
                       <View key={`post-${e.id}`}>
-                        <MFPostCard themeColors={themeColors} data={e} />
+                        <MFPostCard
+                          themeColors={themeColors}
+                          data={e}
+                          friendStatus={friendStatus}
+                          onPress={() =>
+                            addFriendFunction({
+                              friendStatus: friendStatus,
+                              id: e.client?.id,
+                            })
+                          }
+                        />
                       </View>
                     );
                   }
@@ -841,6 +955,32 @@ export default function HomeScren() {
               posts
                 .filter((e, y) => y > 3)
                 .map((e: any, y: number) => {
+                  let friendStatus = 1;
+
+                  if (
+                    !!myFriends.receives &&
+                    Array.isArray(myFriends.receives) &&
+                    myFriends.receives.includes(e.id)
+                  ) {
+                    friendStatus = 4;
+                  }
+
+                  if (
+                    !!myFriends.requests &&
+                    Array.isArray(myFriends.requests) &&
+                    myFriends.requests.includes(e.client?.id)
+                  ) {
+                    friendStatus = 3;
+                  }
+
+                  if (
+                    !!myFriends.friends &&
+                    Array.isArray(myFriends.friends) &&
+                    myFriends.friends.includes(e.client?.id)
+                  ) {
+                    friendStatus = 2;
+                  }
+
                   if (e.client.id === user?.client?.id) {
                     if (tempDel.includes(e.id)) return null;
                     return (
@@ -860,7 +1000,17 @@ export default function HomeScren() {
                   } else {
                     return (
                       <View key={`post-${e.id}`}>
-                        <MFPostCard themeColors={themeColors} data={e} />
+                        <MFPostCard
+                          themeColors={themeColors}
+                          data={e}
+                          friendStatus={friendStatus}
+                          onPress={() =>
+                            addFriendFunction({
+                              friendStatus: friendStatus,
+                              id: e.client?.id,
+                            })
+                          }
+                        />
                       </View>
                     );
                   }
@@ -878,8 +1028,9 @@ export default function HomeScren() {
               </Text>
             </View>
           </ScrollView>
-        </View>
-      )}
+        )}
+      </View>
+      <FloatingContinueTrainingButtonWrapper themeColors={themeColors} />
     </View>
   );
 }

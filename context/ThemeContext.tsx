@@ -16,10 +16,10 @@ export const MFThemeProvider = ({
   children: ReactNode;
   colorScheme?: any;
 }) => {
-  const [theme, setTheme] = useState<"light" | "dark">(colorScheme);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const toggleTheme = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
+    setTheme("light");
     await SecureStore.setItemAsync("theme", newTheme);
   };
 

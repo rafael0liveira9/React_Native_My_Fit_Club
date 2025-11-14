@@ -1,5 +1,5 @@
 import { usePathname } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ButtonProps,
@@ -38,6 +38,12 @@ interface MFThemeButtonProps extends ButtonProps {
 interface MFFloatButtonProps extends ButtonProps {
   color: string;
   icon: React.ReactNode;
+  onPress: () => void;
+}
+
+interface MFAddFriendProps extends ButtonProps {
+  themeColors: any;
+  type: number;
   onPress: () => void;
 }
 
@@ -477,6 +483,84 @@ export function MFFloatCircleMainButton({
         {icon}
       </TouchableOpacity>
     </View>
+  );
+}
+
+export function MFAddFriendButton({
+  themeColors,
+  type,
+  onPress,
+}: MFAddFriendProps) {
+  // Type 1=não amigo 2=amig 3=adicionado 4=pedido recebido
+  const [isPressed, setIsPressed] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsPressed(false);
+  }, [type]);
+
+  return (
+    <TouchableOpacity
+      onPress={
+        isPressed === true
+          ? () => {}
+          : () => {
+              onPress();
+              setIsPressed(true);
+            }
+      }
+      style={{
+        position: "absolute",
+        right: 10,
+        borderRadius: 8,
+        borderWidth: 1,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderColor:
+          type === 1
+            ? themeColors.info
+            : type === 2
+            ? themeColors.grey
+            : type === 3
+            ? themeColors.orange
+            : themeColors.success,
+        backgroundColor:
+          type === 1
+            ? themeColors.info
+            : type === 2
+            ? themeColors.grey
+            : type === 3
+            ? themeColors.grey
+            : themeColors.grey,
+      }}
+    >
+      <Text
+        style={{
+          color:
+            type === 1
+              ? themeColors.white
+              : type === 2
+              ? themeColors.text
+              : type === 3
+              ? themeColors.orange
+              : themeColors.success,
+          fontWeight: 900,
+        }}
+      >
+        {type === 1
+          ? !isPressed
+            ? "Adicionar amigo"
+            : "Pedido enviado"
+          : type === 2
+          ? "Amigo"
+          : type === 3
+          ? !isPressed
+            ? "Cancelar solicitação"
+            : "Cancelado"
+          : !isPressed
+          ? "Aceitar solicitação"
+          : "Solicitação aceita"}
+      </Text>
+    </TouchableOpacity>
   );
 }
 

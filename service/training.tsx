@@ -67,17 +67,26 @@ export async function getExecutionById({
   }
 }
 
-export async function getTrainingsByToken({ token }: { token: string }) {
+export async function getTrainingsByToken({
+  token,
+  personalId,
+}: {
+  token: string;
+  personalId?: string;
+}) {
   try {
     if (!API_URL) {
       throw new Error("API URL não encontrada no extra do app.json.");
     }
 
-    const response = await axios.get(`${API_URL}/trainings`, {
-      headers: {
-        Authorization: token,
-      },
-    });
+    const response = await axios.get(
+      `${API_URL}/trainings${personalId ? `?personalId=${personalId}` : ""}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
 
     return response.data;
   } catch (error: any) {
@@ -98,12 +107,21 @@ export async function CreateTraining({
   url,
   photo,
   token,
+  assign,
 }: Training) {
   try {
     if (!API_URL) {
       throw new Error("API URL não encontrada no extra do app.json.");
     }
 
+    console.log({
+      name: name,
+      description: description,
+      level: level,
+      url: url,
+      photo: photo,
+      assign: assign ? assign : false,
+    });
     const response = await axios.post(
       `${API_URL}/training`,
       {
@@ -112,6 +130,7 @@ export async function CreateTraining({
         level: level,
         url: url,
         photo: photo,
+        assign: assign ? assign : false,
       },
       {
         headers: {
@@ -624,13 +643,23 @@ export async function GetLastExecution({ token }: EvaluationUpdate) {
   }
 }
 
-export async function getShop({ token }: { token: string }) {
+export async function getShop({
+  token,
+  search,
+}: {
+  token: string;
+  search?: string;
+}) {
   try {
     if (!API_URL) {
       throw new Error("API URL não encontrada no extra do app.json.");
     }
 
-    const response = await axios.get(`${API_URL}/shop`, {
+    const url = search
+      ? `${API_URL}/shop?search=${encodeURIComponent(search)}`
+      : `${API_URL}/shop`;
+
+    const response = await axios.get(url, {
       headers: {
         Authorization: token,
       },
@@ -661,6 +690,75 @@ export async function getTrainingShopById({
     }
 
     const response = await axios.get(`${API_URL}/shop/training/${id}`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function getClients({
+  token,
+  page,
+  string,
+}: {
+  token: string;
+  page: string;
+  string?: string;
+}) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    const pageSize = 10;
+
+    console.log(
+      `${API_URL}/get-clients?page=${page}&pageSize=${pageSize}${
+        !!string ? `&string=${string}` : ""
+      }`
+    );
+
+    const response = await axios.get(
+      `${API_URL}/get-clients?page=${page}&pageSize=${pageSize}${
+        !!string ? `&string=${string}` : ""
+      }`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    return {
+      status: error?.status,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro desconhecido.",
+    };
+  }
+}
+
+export async function getActiveExecution({ token }: { token: string }) {
+  try {
+    if (!API_URL) {
+      throw new Error("API URL não encontrada no extra do app.json.");
+    }
+
+    const response = await axios.get(`${API_URL}/active-execution`, {
       headers: {
         Authorization: token,
       },

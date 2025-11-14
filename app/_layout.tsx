@@ -1,5 +1,5 @@
 import { ConfettiOverlay } from "@/components/my-fit-ui/animations";
-import { Colors } from "@/constants/Colors";
+import { ActiveExecutionProvider } from "@/context/ActiveExecutionContext";
 import { MFThemeProvider } from "@/context/ThemeContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import SplashScreen from "@/view/splashScreen";
@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     Orbitron: require("../assets/fonts/Orbitron-VariableFont_wght.ttf"),
   });
@@ -20,7 +20,6 @@ export default function RootLayout() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(),
     [theme, setTheme] = useState<string | null>(),
-    [themeColors, setThemeColors] = useState<any>(),
     [hasRedirected, setHasRedirected] = useState(false),
     [isReady, setIsReady] = useState(false);
 
@@ -71,14 +70,7 @@ export default function RootLayout() {
     } else {
       router.replace("/(auth)");
     }
-  }, [loaded, isReady, token]);
-
-  useEffect(() => {
-    const selectedTheme = (theme ??
-      colorScheme ??
-      "light") as keyof typeof Colors;
-    setThemeColors(Colors[selectedTheme]);
-  }, [theme, colorScheme]);
+  }, [loaded, isReady, token, hasRedirected, router]);
 
   if (!isReady || !loaded) {
     return <SplashScreen></SplashScreen>;
@@ -93,10 +85,12 @@ export default function RootLayout() {
       }}
     >
       <MFThemeProvider colorScheme={theme ? theme : colorScheme}>
-        <ConfettiOverlay />
-        <Stack screenOptions={{ headerShown: false }} />
-        <StatusBar style="auto" />
-        <Toast />
+        <ActiveExecutionProvider>
+          <ConfettiOverlay />
+          <Stack screenOptions={{ headerShown: false }} />
+          <StatusBar style="auto" />
+          <Toast />
+        </ActiveExecutionProvider>
       </MFThemeProvider>
     </SafeAreaView>
   );

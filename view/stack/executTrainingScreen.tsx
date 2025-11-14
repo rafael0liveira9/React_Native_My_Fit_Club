@@ -154,14 +154,19 @@ export default function ExecutTrainingScreen() {
         showConfetti();
         Toast.show({
           type: "success",
-          text1: `✅ Treino finalizado.`,
+          text1: `✅ Treino finalizado!`,
         });
-        router.replace("/(tabs)/training");
+
+        // Pequeno delay para mostrar o confete antes de voltar
+        setTimeout(() => {
+          router.replace("/(tabs)/training");
+        }, 1000);
       } else {
         Toast.show({
           type: "error",
           text1: `❌ Erro ao finalizar o treino.`,
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Erro ao finalizar treino:", error);
@@ -169,40 +174,50 @@ export default function ExecutTrainingScreen() {
         type: "error",
         text1: `❌ Erro inesperado ao finalizar o treino.`,
       });
-    } finally {
       setIsLoading(false);
+    } finally {
       setEvaluationModalOpen(false);
     }
   }
 
-  async function FinishTrainingHandle({
+  function FinishTrainingHandle({
     exerciseId,
     difficulty,
   }: {
     exerciseId: number;
     difficulty: string[];
   }) {
-    const x = await ExerciseFinish({
+    // Atualização otimista: Marca como concluído imediatamente no estado local
+    const updatedSeries = seriesList.map((serie: any) => {
+      if (serie.id === exerciseId) {
+        return {
+          ...serie,
+          serieExecution: [{ id: Date.now(), difficulty }], // Mock execution
+        };
+      }
+      return serie;
+    });
+
+    setSeriesList(updatedSeries);
+
+    Toast.show({
+      type: "success",
+      text1: "✅ Concluído!",
+    });
+
+    // Envia requisição em background (não aguarda)
+    ExerciseFinish({
       token: token,
       exerciseId: exerciseId,
       executionId: +id,
       difficulty: difficulty,
+    }).catch((error) => {
+      console.error("Erro ao salvar exercício:", error);
+      // Se der erro, reverte o estado
+      getUserData();
     });
 
-    if (x.status === 200 || x.status === 201) {
-      getUserData();
-      Toast.show({
-        type: "success",
-        text1: "Exercício concluido",
-      });
-      return true;
-    } else {
-      Toast.show({
-        type: "error",
-        text1: "Falha ao concluir exercício",
-      });
-      return false;
-    }
+    return true;
   }
 
   async function NewEvaluationTrainingHandle({

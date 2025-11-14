@@ -1,5 +1,3 @@
-import { useRouter } from "expo-router";
-
 import { globalStyles } from "@/styles/global";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, ViewProps } from "react-native";
@@ -63,8 +61,7 @@ export default function MFProfilePostsCard({
   postId,
   setPostId,
 }: MFDefaultCardProps) {
-  const router = useRouter(),
-    [user, setUser] = useState<any>(),
+  const [user, setUser] = useState<any>(),
     [myPosts, setMyPosts] = useState<any>();
 
   useEffect(() => {

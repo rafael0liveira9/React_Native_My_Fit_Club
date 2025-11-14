@@ -4,15 +4,16 @@ import { useTheme } from "@/context/ThemeContext";
 // import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Tabs, useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 
 export default function TabLayout() {
   const { theme, toggleTheme } = useTheme();
-  const router = useRouter(),
-    [isHeaderInfoOpen, setisHeaderInfoOpen] = useState(false);
-  const themeColors = Colors[`${theme}`];
+  const [isHeaderInfoOpen, setisHeaderInfoOpen] = useState(false);
+  const themeColors = Colors[`light`];
 
   const CustomTabBarButton = (props: any) => {
     const isSelected = props?.accessibilityState?.selected ?? false;
@@ -86,7 +87,7 @@ export default function TabLayout() {
                 style={{
                   flex: 1,
                   width: "100%",
-                  height: "100%", // ocupa toda a altura
+                  height: "100%",
                   alignItems: "center",
                   justifyContent: "center",
                   borderTopWidth: focused ? 3 : 0,
@@ -94,6 +95,74 @@ export default function TabLayout() {
                 }}
               >
                 <Entypo name="home" size={focused ? 29 : 18} color={color} />
+              </View>
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="clients/index"
+          options={{
+            header: () => (
+              <MFMainHeader
+                themeColors={themeColors}
+                theme={theme}
+                toggleTheme={toggleTheme}
+                isOpen={isHeaderInfoOpen}
+                setIsOpen={setisHeaderInfoOpen}
+              />
+            ),
+            tabBarButton: (props) => <CustomTabBarButton {...props} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderTopWidth: focused ? 3 : 0,
+                  borderColor: themeColors.primary,
+                }}
+              >
+                <Ionicons
+                  name="person"
+                  size={focused ? 25 : 15}
+                  color={color}
+                />
+              </View>
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="personal/index"
+          options={{
+            header: () => (
+              <MFMainHeader
+                themeColors={themeColors}
+                theme={theme}
+                toggleTheme={toggleTheme}
+                isOpen={isHeaderInfoOpen}
+                setIsOpen={setisHeaderInfoOpen}
+              />
+            ),
+            tabBarButton: (props) => <CustomTabBarButton {...props} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderTopWidth: focused ? 3 : 0,
+                  borderColor: themeColors.primary,
+                }}
+              >
+                <FontAwesome6
+                  name="dumbbell"
+                  size={focused ? 25 : 15}
+                  color={color}
+                />
               </View>
             ),
           }}
@@ -116,15 +185,15 @@ export default function TabLayout() {
                 style={{
                   flex: 1,
                   width: "100%",
-                  height: "100%", // ocupa toda a altura
+                  height: "100%",
                   alignItems: "center",
                   justifyContent: "center",
                   borderTopWidth: focused ? 3 : 0,
                   borderColor: themeColors.primary,
                 }}
               >
-                <FontAwesome6
-                  name="dumbbell"
+                <MaterialIcons
+                  name="dashboard-customize"
                   size={focused ? 25 : 15}
                   color={color}
                 />
@@ -150,7 +219,7 @@ export default function TabLayout() {
                 style={{
                   flex: 1,
                   width: "100%",
-                  height: "100%", // ocupa toda a altura
+                  height: "100%",
                   alignItems: "center",
                   justifyContent: "center",
                   borderTopWidth: focused ? 3 : 0,

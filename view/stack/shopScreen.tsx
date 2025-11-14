@@ -1,6 +1,8 @@
 import { MFShopTrainingCard } from "@/components/my-fit-ui/cards";
 import MFFilterSortBox from "@/components/my-fit-ui/filterBox";
+import { FloatingContinueTrainingButtonWrapper } from "@/components/my-fit-ui/floatingButton";
 import { MFSingleInputModal } from "@/components/my-fit-ui/modal";
+import { ProductSkeleton } from "@/components/my-fit-ui/skeleton";
 import MFStackEditSubtitle from "@/components/my-fit-ui/stackEditSubtitle";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
@@ -13,13 +15,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function ShopScreen() {
@@ -152,10 +148,22 @@ export default function ShopScreen() {
       <MFFilterSortBox
         themeColors={themeColors}
         search={search}
-        sort={sort}
         setSearch={setSearch}
-        setSort={setSort}
-        sortOptions={sortOptions}
+        isLoading={isLoading}
+        placeholder="Buscar treino"
+        onPress={async () => {
+          setIsLoading(true);
+          try {
+            if (token) {
+              const x = await getShop({ token, search });
+              setShopTrainings(x);
+            }
+          } catch (error) {
+            console.error("Erro na busca:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        }}
       ></MFFilterSortBox>
       <View style={trainingStyles.listBox}>
         <MFStackEditSubtitle
@@ -165,26 +173,36 @@ export default function ShopScreen() {
           info="Lista de treinos que estão disponiveis para você atribuir ao seu treinamento."
         ></MFStackEditSubtitle>
         <View style={{ height: 20 }}></View>
+
+        {/* Tabs Modernizadas */}
         <View
-          style={[
-            globalStyles.flexr,
-            trainingStyles.trainingTabsBox,
-            { borderColor: themeColors.themeGrey },
-          ]}
+          style={{
+            flexDirection: "row",
+            backgroundColor: themeColors.backgroundSecondary,
+            borderRadius: 12,
+            padding: 4,
+            marginBottom: 20,
+          }}
         >
           <TouchableOpacity
             onPress={() => setStep(1)}
-            style={[
-              trainingStyles.trainingTab,
-              {
-                backgroundColor:
-                  step === 1 ? themeColors.primary : themeColors.grey,
-              },
-            ]}
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderRadius: 10,
+              backgroundColor:
+                step === 1 ? themeColors.primary : "transparent",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            activeOpacity={0.7}
           >
             <Text
               style={{
                 color: step === 1 ? themeColors.white : themeColors.text,
+                fontSize: 15,
+                fontWeight: step === 1 ? "700" : "500",
               }}
             >
               Treinos
@@ -192,81 +210,74 @@ export default function ShopScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setStep(2)}
-            style={[
-              trainingStyles.trainingTab,
-              {
-                backgroundColor:
-                  step === 2 ? themeColors.primary : themeColors.grey,
-              },
-            ]}
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderRadius: 10,
+              backgroundColor:
+                step === 2 ? themeColors.primary : "transparent",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            activeOpacity={0.7}
           >
             <Text
               style={{
-                color: step === 2 ? themeColors.white : themeColors.black,
+                color: step === 2 ? themeColors.white : themeColors.text,
+                fontSize: 15,
+                fontWeight: step === 2 ? "700" : "500",
               }}
             >
               Pacotes
             </Text>
           </TouchableOpacity>
         </View>
-        {isLoading ? (
-          <ActivityIndicator size={40} color={themeColors.primary} />
-        ) : (
-          <View
-            style={[
-              globalStyles.flexr,
-              {
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: 10,
-                paddingBottom: 100,
-              },
-            ]}
-          >
-            {step === 1 &&
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 10,
+            paddingBottom: 100,
+          }}
+        >
+          {isLoading ? (
+            <>
+              <ProductSkeleton themeColors={themeColors} />
+              <ProductSkeleton themeColors={themeColors} />
+              <ProductSkeleton themeColors={themeColors} />
+              <ProductSkeleton themeColors={themeColors} />
+              <ProductSkeleton themeColors={themeColors} />
+              <ProductSkeleton themeColors={themeColors} />
+            </>
+          ) : step === 1 &&
             shopTrainings &&
             Array.isArray(shopTrainings) &&
             shopTrainings.length > 0 ? (
-              shopTrainings.map((e: any) => {
-                return (
-                  <MFShopTrainingCard
-                    key={e.id}
-                    data={e}
-                    themeColors={themeColors}
-                    onPress={() =>
-                      router.push(`/(stack)/shop/${"training"}/${e.id}`)
-                    }
-                  ></MFShopTrainingCard>
-                );
-              })
-            ) : (
+            shopTrainings.map((e: any) => {
+              return (
+                <MFShopTrainingCard
+                  key={e.id}
+                  data={e}
+                  themeColors={themeColors}
+                  onPress={() =>
+                    router.push(`/(stack)/shop/${"training"}/${e.id}`)
+                  }
+                ></MFShopTrainingCard>
+              );
+            })
+          ) : (
+            <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
               <Text style={{ fontSize: 20, color: themeColors.text }}>
                 Nenhum treino encontrado 😢
               </Text>
-            )}
-            {/* {step === 2 &&
-              shopTrainings &&
-              shopTrainings?.map((e: any, y: number) => {
-                return (
-                  <TouchableOpacity
-                    style={{ width: "100%" }}
-                    onPress={() =>
-                      router.push(`/training/${(e?.id).toString()}`)
-                    }
-                    key={y}
-                  >
-                    <MFTrainingCard
-                      themeColors={themeColors}
-                      data={e}
-                    ></MFTrainingCard>
-                  </TouchableOpacity>
-                );
-              })} */}
-          </View>
-        )}
+            </View>
+          )}
+        </View>
       </View>
+      <FloatingContinueTrainingButtonWrapper themeColors={themeColors} />
     </ScrollView>
   );
 }

@@ -1,3 +1,5 @@
+// prettier-ignore
+
 import {
   formatDate,
   formatTimeAgo,
@@ -16,6 +18,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import {
   Animated,
+  AppState,
+  AppStateStatus,
   Dimensions,
   Image,
   Keyboard,
@@ -31,13 +35,613 @@ import {
   ViewProps,
 } from "react-native";
 
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { Picker } from "@react-native-picker/picker";
-import { MFModalSmallButton, MFSuccessButton } from "./buttons";
+import {
+  MFAddFriendButton,
+  MFModalSmallButton,
+  MFSuccessButton,
+} from "./buttons";
 import { MFLongTextInput, MFWheightInput } from "./inputs";
 import MFYouTubeModal, { MFLogoutModal } from "./modal";
 import MFSeparator from "./separator";
+
+const styles = StyleSheet.create({
+  box: {
+    width: "100%",
+    padding: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    paddingBottom: 40,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  boxWhitoutPadding: {
+    width: "100%",
+    padding: 0,
+    margin: 0,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  plus: {
+    width: "100%",
+    padding: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trainingBox: {
+    width: "100%",
+    minHeight: 100,
+    height: 180,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  trainingBoxMirror: {
+    width: "auto",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    paddingRight: 25,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomLeftRadius: 15,
+    zIndex: 1,
+    gap: 10,
+  },
+  postBoxMirror: {
+    width: "auto",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    // paddingTop: 25,
+    // paddingRight: 25,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomLeftRadius: 15,
+    zIndex: 1,
+    gap: 10,
+  },
+  mirrorButton: {
+    width: "100%",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingRight: 30,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  stepBox: {
+    width: "100%",
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 1,
+    shadowRadius: 1,
+    elevation: 5,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    margin: 0,
+  },
+  stepBoxOpen: {
+    width: "100%",
+    paddingVertical: 20,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    margin: 0,
+    gap: 20,
+  },
+  serieBox: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    margin: 0,
+    borderWidth: 1,
+    position: "relative",
+    paddingHorizontal: 7,
+    paddingVertical: 20,
+    borderRadius: 5,
+  },
+  cardWarning: {
+    position: "absolute",
+    top: -10,
+    left: 20,
+    zIndex: 9,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  trainingLogo: {
+    width: 150,
+    height: 150,
+    borderRadius: 10,
+    objectFit: "cover",
+  },
+  trainingBoxLastExecution: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+  },
+  trainingBoxAvaliations: {
+    position: "absolute",
+    top: -15,
+    right: 15,
+    zIndex: 2,
+  },
+  trainingAvaliation: {
+    paddingVertical: 2,
+    paddingHorizontal: 13,
+    borderRadius: 5,
+    borderWidth: 1,
+  },
+  deleteExerciseBtn: {
+    borderRadius: 200,
+    padding: 5,
+  },
+  exerciseMain: {
+    width: "100%",
+    minHeight: 75,
+    display: "flex",
+    flexDirection: "column",
+    paddingHorizontal: 60,
+    paddingVertical: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    borderRadius: 18,
+  },
+  exerciseMainOppened: {
+    width: "100%",
+    minHeight: 150,
+    display: "flex",
+    flexDirection: "column",
+    paddingHorizontal: 20,
+    paddingTop: 65,
+    paddingBottom: 30,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    position: "relative",
+  },
+  exerciseInfoBtn: {
+    position: "absolute",
+    left: 8,
+    top: 10,
+    borderWidth: 2,
+    borderRadius: 100,
+  },
+  exerciseCheckBtn: {
+    position: "absolute",
+    right: 8,
+    top: 10,
+    borderRadius: 100,
+  },
+  boxInfoSampleExercises: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 20,
+  },
+  boxInfoSampleExercisesOppened: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    gap: 20,
+  },
+  boxInfoSampleW: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  exerciseInfoFloat: {
+    position: "absolute",
+    top: -12,
+    left: 45,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 10,
+  },
+  exerciseItemRepetition: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    gap: 10,
+  },
+  containerClock: {
+    position: "absolute",
+    width: "90%",
+    minHeight: 70,
+    bottom: 10,
+    left: "5%",
+    zIndex: 9,
+    paddingTop: 5,
+    paddingBottom: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    borderWidth: 1,
+  },
+  clockBox: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  buttonClock: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  InfoBoxModalShow: {
+    width: "100%",
+    zIndex: 9,
+  },
+  trainingInfoContainer: {
+    width: "100%",
+    minHeight: 100,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+  },
+  trainingInfoImageBox: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  trainingInfoPhoto: {
+    width: 180,
+    height: 100,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    display: "flex",
+  },
+  evaluationTextInfo: {
+    paddingLeft: 10,
+    fontSize: 16,
+    fontWeight: 900,
+  },
+  finishTrainingMain: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  finishTrainingtext: {
+    fontSize: 22,
+    fontWeight: 600,
+    marginBottom: 30,
+  },
+  starContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  postCardContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    padding: 0,
+    marginTop: 10,
+  },
+  cardPost: {
+    width: "100%",
+    padding: 12,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  headerPost: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  avatarPost: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 10,
+  },
+  avatarClientPost: {
+    width: 55,
+    height: 55,
+    borderRadius: 55,
+    marginRight: 10,
+  },
+  authorInfoPost: {
+    flexDirection: "column",
+  },
+  authorNamePost: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  datePost: {
+    fontSize: 12,
+  },
+  bodyPost: {
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  titlePost: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  descriptionPost: {
+    fontSize: 14,
+    color: "#444",
+    marginBottom: 8,
+  },
+  postImagePost: {
+    width: "100%",
+    height: 300,
+    borderRadius: 8,
+  },
+  adminImagePost: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  cardPubli: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+  bodyPubli: {
+    marginTop: 5,
+    marginBottom: 15,
+    paddingVertical: 10,
+  },
+  postImagePubli: {
+    width: "100%",
+  },
+  createPostMain: {
+    paddingHorizontal: 10,
+    paddingTop: 2,
+    paddingBottom: 1,
+    width: "100%",
+    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  createPostMainSelected: {
+    paddingHorizontal: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
+    width: "100%",
+    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    borderBottomWidth: 1,
+  },
+  iconNewPostBox: {
+    width: 38,
+    height: 38,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  postContent: {
+    width: "100%",
+    gap: 15,
+  },
+  shopTrainingCard: {
+    width: "45%",
+    height: 260,
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  shopTrainingImage: {
+    width: "100%",
+    height: 140,
+  },
+  shopTrainingInfo: {
+    padding: 12,
+  },
+  shopTrainingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
+    marginBottom: 4,
+  },
+  shopTrainingDescription: {
+    fontSize: 14,
+  },
+  shopTrainingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  shopTrainingRating: {
+    backgroundColor: "#FFD700",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+  },
+  shopTrainingRatingText: {
+    fontWeight: "600",
+    color: "#333",
+  },
+  shopTrainingPriceContainer: {
+    alignItems: "flex-end",
+  },
+  shopTrainingOldPrice: {
+    fontSize: 13,
+    textDecorationLine: "line-through",
+  },
+  shopTrainingPrice: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  MFFreePrice: {
+    borderRadius: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    marginRight: -5,
+  },
+  cardInfoPersonal: {
+    elevation: 4,
+    overflow: "hidden",
+    paddingBottom: 20,
+    marginBottom: 10,
+  },
+  backgroundImageInfoPersonal: {
+    width: "100%",
+    height: 150,
+  },
+  profileContainerInfoPersonal: {
+    alignItems: "flex-start",
+    padding: 16,
+    marginTop: -100,
+  },
+  profileImageInfoPersonal: {
+    width: 150,
+    height: 150,
+    borderRadius: 150,
+    borderWidth: 3,
+    marginBottom: 8,
+  },
+  nameInfoPersonal: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  nickInfoPersonal: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  descriptionInfoPersonal: {
+    fontSize: 14,
+    textAlign: "left",
+    marginTop: 4,
+  },
+  authorNamePostInfoPersonal: {
+    fontSize: 24,
+    fontWeight: "600",
+  },
+  adminImagePostInfoPersonal: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  wtsppBoxInfoPersonal: {
+    width: "100%",
+    paddingTop: 40,
+    paddingHorizontal: 10,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  wtsppBtnInfoPersonal: {
+    width: 200,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 interface MFDefaultCardProps extends ViewProps {
   themeColors?: any;
@@ -81,7 +685,9 @@ export function MFTrainingExecutionCard({
   themeColors,
   data,
   Unassign,
+  EditTraining,
   isHome,
+  isMyTraining,
 }: {
   isNew?: boolean;
   isExecutionLoading?: boolean;
@@ -91,7 +697,9 @@ export function MFTrainingExecutionCard({
   themeColors: any;
   data: any;
   Unassign: (id: number) => void;
+  EditTraining?: (id: number) => void;
   isHome?: boolean;
+  isMyTraining?: boolean;
 }) {
   const [isOptionsOPen, setIsOptionsOPen] = useState<boolean>(false),
     [unassignOpen, setUnassignOpen] = useState<boolean>(false);
@@ -144,6 +752,7 @@ export function MFTrainingExecutionCard({
           ? () => setIsOptionsOPen(true)
           : null
       }
+      style={{ paddingTop: 20, marginBottom: 30 }}
     >
       <View
         key={data.id}
@@ -182,6 +791,23 @@ export function MFTrainingExecutionCard({
               },
             ]}
           >
+            {isInExecution !== data.id && EditTraining && (
+              <TouchableOpacity
+                onPress={() => {
+                  EditTraining(data.id);
+                  setIsOptionsOPen(false);
+                }}
+                style={[
+                  styles.mirrorButton,
+                  { backgroundColor: themeColors.white, position: "relative" },
+                ]}
+              >
+                <Text>Editar treino</Text>
+                <View style={{ position: "absolute", right: 10 }}>
+                  <FontAwesome name="edit" size={14} color="black" />
+                </View>
+              </TouchableOpacity>
+            )}
             {isInExecution !== data.id && (
               <TouchableOpacity
                 onPress={() => setUnassignOpen(true)}
@@ -308,6 +934,28 @@ export function MFTrainingExecutionCard({
             >
               <FontAwesome5 name="clock" size={11} color={themeColors.danger} />
               <Text style={{ color: themeColors.danger }}>EM EXECUÇÃO</Text>
+            </View>
+          )}
+          {isMyTraining && (
+            <View
+              style={[
+                styles.trainingAvaliation,
+                globalStyles.flexr,
+                {
+                  backgroundColor: themeColors.success,
+                  borderColor: themeColors.success,
+                  gap: 6,
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="verified"
+                size={14}
+                color={themeColors.white}
+              />
+              <Text style={{ color: themeColors.white, fontSize: 11, fontWeight: "700" }}>
+                CRIADO POR VOCÊ
+              </Text>
             </View>
           )}
         </View>
@@ -612,12 +1260,6 @@ export function StepEditCard({
   token: string;
   onPress?: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  const [exercise, setExercise] = useState<string>(
-    data?.exercise?.id?.toString()
-  );
-
   return (
     <View
       style={[
@@ -730,12 +1372,14 @@ export function MFExerciseExecuteClosedCard({
       difficulty: e.difficulty,
     });
 
+    setIsLoading(false);
+    setExecuteModalVisible(false);
+
     if (res === true) {
       setTimeout(() => {
         setExecuteModalVisible(false);
       }, 500);
     }
-    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -748,7 +1392,7 @@ export function MFExerciseExecuteClosedCard({
     } else {
       setIsAlreadyExecuted(false);
     }
-  });
+  }, [e.serieExecution]);
 
   return (
     <View
@@ -915,23 +1559,18 @@ export function MFExerciseExecuteOppenedCard({
   FinishTrainingHandle,
   next,
 }: MFExerciseExecuteCardProps) {
-  const [isLoading, setIsLoading] = useState(false),
-    [ytModalVisible, setYtModalVisible] = useState(false),
+  const [ytModalVisible, setYtModalVisible] = useState(false),
     [executeModalVisible, setExecuteModalVisible] = useState(false);
-  async function CompleteExercise() {
-    setIsLoading(true);
 
-    const res = await FinishTrainingHandle({
+  function CompleteExercise() {
+    // Fecha o modal PRIMEIRO (instantâneo)
+    setExecuteModalVisible(false);
+
+    // Depois atualiza em background
+    FinishTrainingHandle({
       exerciseId: e.id,
       difficulty: e.difficulty,
     });
-
-    if (res === true) {
-      setTimeout(() => {
-        setExecuteModalVisible(false);
-      }, 500);
-    }
-    setIsLoading(false);
   }
 
   return (
@@ -947,7 +1586,7 @@ export function MFExerciseExecuteOppenedCard({
         text={"Concluir este exercicio?"}
         onPress={CompleteExercise}
         close={() => setExecuteModalVisible(false)}
-        isLoading={isLoading}
+        isLoading={false}
       ></MFLogoutModal>
       <TouchableOpacity
         onPress={() => setExerciseOpened(null)}
@@ -1108,121 +1747,215 @@ export function MFClockExecute({
   const [centiseconds, setCentiseconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isTimeOut, setIsTimeOut] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const backgroundTimeRef = useRef<number>(0);
+
+  // Gerencia o cronômetro
   useEffect(() => {
     if (isRunning) {
+      // Inicia ou retoma o cronômetro
+      if (startTimeRef.current === 0) {
+        startTimeRef.current = Date.now();
+      }
+
       intervalRef.current = setInterval(() => {
-        setCentiseconds((prev) => prev + 1);
-      }, 10);
+        const elapsed = Date.now() - startTimeRef.current;
+        setCentiseconds(Math.floor(elapsed / 10));
+      }, 50); // 50ms para mais precisão
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
   }, [isRunning]);
 
+  // Gerencia quando o app minimiza/maximiza
   useEffect(() => {
-    if (!!clockData?.interval && !!centiseconds) {
-      if (clockData?.interval < centiseconds / 100) {
-        setIsTimeOut(true);
-      } else {
-        setIsTimeOut(false);
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (isRunning) {
+        if (nextAppState === 'background' || nextAppState === 'inactive') {
+          // App minimizado - salva o tempo atual
+          backgroundTimeRef.current = Date.now();
+        } else if (nextAppState === 'active' && backgroundTimeRef.current > 0) {
+          // App retornou - ajusta o tempo
+          const timeInBackground = Date.now() - backgroundTimeRef.current;
+          startTimeRef.current -= timeInBackground;
+          backgroundTimeRef.current = 0;
+        }
       }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [isRunning]);
+
+  // Verifica se passou do tempo sugerido
+  useEffect(() => {
+    if (clockData?.interval && centiseconds > 0) {
+      setIsTimeOut(centiseconds / 100 > clockData.interval);
+    } else {
+      setIsTimeOut(false);
     }
-  }, [centiseconds]);
+  }, [centiseconds, clockData?.interval]);
 
   const formatTime = (cs: number) => {
-    const minutes = Math.floor(cs / 6000)
-      .toString()
-      .padStart(2, "0");
-    const seconds = Math.floor((cs % 6000) / 100)
-      .toString()
-      .padStart(2, "0");
-    const cent = (cs % 100).toString().padStart(2, "0");
+    const totalSeconds = Math.floor(cs / 100);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const centis = cs % 100;
 
-    return `${minutes}:${seconds}:${cent}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${centis.toString().padStart(2, "0")}`;
   };
 
-  const handlePress = () => {
+  const handlePlayPause = () => {
     if (isRunning) {
+      // Pausar
       setIsRunning(false);
-    } else if (centiseconds > 0) {
-      setCentiseconds(0);
-      setIsTimeOut(false);
     } else {
+      // Iniciar/Retomar
+      if (centiseconds === 0) {
+        startTimeRef.current = Date.now();
+      }
       setIsRunning(true);
     }
   };
 
-  const color = isRunning
-    ? themeColors.warning
-    : centiseconds !== 0
-    ? themeColors.info
-    : themeColors.success;
-
-  const renderButtonIcon = () => {
-    if (isRunning)
-      return <Ionicons name="pause-sharp" size={20} color={color} />;
-    if (centiseconds > 0)
-      return <FontAwesome name="refresh" size={20} color={color} />;
-    return <Ionicons name="play-sharp" size={20} color={color} />;
+  const handleReset = () => {
+    setCentiseconds(0);
+    setIsTimeOut(false);
+    startTimeRef.current = 0;
+    setIsRunning(false);
   };
+
+  const getPlayPauseColor = () => {
+    if (isRunning) return themeColors.warning;
+    return themeColors.success;
+  };
+
+  const progressPercentage = clockData?.interval
+    ? Math.min((centiseconds / 100 / clockData.interval) * 100, 100)
+    : 0;
 
   return (
     <View
       style={[
         styles.containerClock,
         {
-          backgroundColor: themeColors.text,
-          borderColor: themeColors.text,
+          backgroundColor: themeColors.secondary,
+          borderColor: isTimeOut ? themeColors.danger : themeColors.text,
+          shadowColor: themeColors.text,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
+          elevation: 8,
         },
       ]}
     >
-      {!!clockData?.exercise?.name && clockData?.interval && (
-        <View style={{ marginLeft: -10 }}>
-          <Text style={{ fontSize: 12, color: themeColors.background }}>
-            O sugerido para {clockData?.exercise?.name} é de{" "}
-            {clockData?.interval} segundos.
+      {/* Informação do exercício */}
+      {clockData?.exercise?.name && clockData?.interval && (
+        <View style={{ width: "100%", marginBottom: 8 }}>
+          <Text
+            style={{
+              fontSize: 13,
+              color: themeColors.text,
+              fontWeight: "600",
+              textAlign: "left"
+            }}
+          >
+            {clockData.exercise.name}
+          </Text>
+          <Text
+            style={{
+              fontSize: 11,
+              color: themeColors.textSecondary,
+              textAlign: "left",
+              marginTop: 2
+            }}
+          >
+            Descanso sugerido: {clockData.interval}s
           </Text>
         </View>
       )}
+
+      {/* Timer display */}
       <View style={styles.clockBox}>
         <Text
           style={{
             fontFamily: "Orbitron",
-            fontSize: 44,
-            color: isTimeOut ? themeColors.primary : themeColors.background,
+            fontSize: 48,
+            fontWeight: "bold",
+            color: isTimeOut ? themeColors.danger : themeColors.text,
+            letterSpacing: 2,
           }}
         >
           {formatTime(centiseconds)}
         </Text>
-        <TouchableOpacity
-          style={[
-            styles.buttonClock,
-            {
-              backgroundColor: themeColors.white,
-              borderColor: color,
-              borderWidth: 1,
-            },
-          ]}
-          onPress={handlePress}
-        >
-          {renderButtonIcon()}
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+          {/* Botão Reset - só aparece se tempo > 0 */}
+          {centiseconds > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.buttonClock,
+                {
+                  backgroundColor: themeColors.info,
+                  borderColor: themeColors.info,
+                  borderWidth: 0,
+                  shadowColor: themeColors.info,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 4,
+                  elevation: 4,
+                },
+              ]}
+              onPress={handleReset}
+              activeOpacity={0.8}
+            >
+              <FontAwesome name="refresh" size={22} color={themeColors.white} />
+            </TouchableOpacity>
+          )}
+
+          {/* Botão Play/Pause */}
+          <TouchableOpacity
+            style={[
+              styles.buttonClock,
+              {
+                backgroundColor: getPlayPauseColor(),
+                borderColor: getPlayPauseColor(),
+                borderWidth: 0,
+                shadowColor: getPlayPauseColor(),
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.4,
+                shadowRadius: 4,
+                elevation: 4,
+              },
+            ]}
+            onPress={handlePlayPause}
+            activeOpacity={0.8}
+          >
+            {isRunning ? (
+              <Ionicons name="pause" size={24} color={themeColors.white} />
+            ) : (
+              <Ionicons name="play" size={24} color={themeColors.white} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Barra de progresso */}
       {clockData?.interval && (
         <View
           style={{
             width: "100%",
-            height: 10,
-            backgroundColor: "#E3E5E5",
+            height: 8,
+            backgroundColor: themeColors.default + "40",
             borderRadius: 10,
             marginTop: 12,
             overflow: "hidden",
@@ -1231,16 +1964,25 @@ export function MFClockExecute({
           <View
             style={{
               height: "100%",
-              width: `${Math.min(
-                (centiseconds / 100 / clockData.interval) * 100,
-                100
-              )}%`,
-              backgroundColor: isTimeOut
-                ? themeColors.primary
-                : themeColors.success,
+              width: `${progressPercentage}%`,
+              backgroundColor: isTimeOut ? themeColors.danger : themeColors.success,
               borderRadius: 10,
+              transition: "width 0.1s ease-out",
             }}
           />
+        </View>
+      )}
+
+      {/* Indicador de tempo excedido */}
+      {isTimeOut && (
+        <View style={{ marginTop: 8, alignItems: "center" }}>
+          <Text style={{
+            fontSize: 12,
+            color: themeColors.danger,
+            fontWeight: "600"
+          }}>
+            ⚠️ Tempo de descanso excedido
+          </Text>
         </View>
       )}
     </View>
@@ -1848,15 +2590,25 @@ export function MFTrainingInfoCard({
 export function MFPostCard({
   themeColors,
   data,
+  friendStatus,
+  onPress,
 }: {
   themeColors: any;
   data: any;
+  friendStatus: number;
+  onPress: () => void;
 }) {
   const { title, description, image, createdAt, updatedAt, client } = data;
 
   return (
     <View style={[styles.cardPost, { backgroundColor: themeColors.secondary }]}>
-      <View style={styles.headerPost}>
+      <View style={[styles.headerPost, { position: "relative" }]}>
+        <MFAddFriendButton
+          title=""
+          themeColors={themeColors}
+          type={friendStatus}
+          onPress={onPress}
+        ></MFAddFriendButton>
         <Image source={{ uri: client?.photo }} style={styles.avatarPost} />
         <View style={styles.authorInfoPost}>
           <View
@@ -2571,7 +3323,7 @@ export function MFCreatePostCard({
         }),
       ]).start();
     }
-  }, [isPostOpen]);
+  }, [isPostOpen, slideAnim, fadeAnim]);
 
   return (
     <Pressable
@@ -3056,519 +3808,1019 @@ export function MFShopTrainingCard({
   );
 }
 
-const styles = StyleSheet.create({
-  box: {
-    width: "100%",
-    padding: 24,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    paddingBottom: 40,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  boxWhitoutPadding: {
-    width: "100%",
-    padding: 0,
-    margin: 0,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  plus: {
-    width: "100%",
-    padding: 24,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  trainingBox: {
-    width: "100%",
-    minHeight: 100,
-    height: 180,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-  },
-  trainingBoxMirror: {
-    width: "auto",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    paddingTop: 25,
-    paddingRight: 25,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderBottomLeftRadius: 15,
-    zIndex: 1,
-    gap: 10,
-  },
-  postBoxMirror: {
-    width: "auto",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    // paddingTop: 25,
-    // paddingRight: 25,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderBottomLeftRadius: 15,
-    zIndex: 1,
-    gap: 10,
-  },
-  mirrorButton: {
-    width: "100%",
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    paddingRight: 30,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderRadius: 3,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  stepBox: {
-    width: "100%",
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 1,
-    shadowRadius: 1,
-    elevation: 5,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    margin: 0,
-  },
-  stepBoxOpen: {
-    width: "100%",
-    paddingVertical: 20,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    margin: 0,
-    gap: 20,
-  },
-  serieBox: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    margin: 0,
-    borderWidth: 1,
-    position: "relative",
-    paddingHorizontal: 7,
-    paddingVertical: 20,
-    borderRadius: 5,
-  },
-  cardWarning: {
-    position: "absolute",
-    top: -10,
-    left: 20,
-    zIndex: 9,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  trainingLogo: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    objectFit: "cover",
-  },
-  trainingBoxLastExecution: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-  },
-  trainingBoxAvaliations: {
-    position: "absolute",
-    top: -15,
-    right: 15,
-    zIndex: 2,
-  },
-  trainingAvaliation: {
-    paddingVertical: 2,
-    paddingHorizontal: 13,
-    borderRadius: 5,
-    borderWidth: 1,
-  },
-  deleteExerciseBtn: {
-    borderRadius: 200,
-    padding: 5,
-  },
-  exerciseMain: {
-    width: "100%",
-    minHeight: 75,
-    display: "flex",
-    flexDirection: "column",
-    paddingHorizontal: 60,
-    paddingVertical: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    borderRadius: 18,
-  },
-  exerciseMainOppened: {
-    width: "100%",
-    minHeight: 150,
-    display: "flex",
-    flexDirection: "column",
-    paddingHorizontal: 20,
-    paddingTop: 65,
-    paddingBottom: 30,
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    position: "relative",
-  },
-  exerciseInfoBtn: {
-    position: "absolute",
-    left: 8,
-    top: 10,
-    borderWidth: 2,
-    borderRadius: 100,
-  },
-  exerciseCheckBtn: {
-    position: "absolute",
-    right: 8,
-    top: 10,
-    borderRadius: 100,
-  },
-  boxInfoSampleExercises: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: 20,
-  },
-  boxInfoSampleExercisesOppened: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-    gap: 20,
-  },
-  boxInfoSampleW: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  exerciseInfoFloat: {
-    position: "absolute",
-    top: -12,
-    left: 45,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    gap: 10,
-  },
-  exerciseItemRepetition: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    gap: 10,
-  },
-  containerClock: {
-    position: "absolute",
-    width: "90%",
-    minHeight: 70,
-    bottom: 10,
-    left: "5%",
-    zIndex: 9,
-    paddingTop: 5,
-    paddingBottom: 12,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    borderWidth: 1,
-  },
-  clockBox: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  buttonClock: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 50,
-    width: 50,
-    height: 50,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  InfoBoxModalShow: {
-    width: "100%",
-    zIndex: 9,
-  },
-  trainingInfoContainer: {
-    width: "100%",
-    minHeight: 100,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
-  trainingInfoImageBox: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  trainingInfoPhoto: {
-    width: 180,
-    height: 100,
-    borderRadius: 6,
-    alignItems: "center",
-    justifyContent: "center",
-    display: "flex",
-  },
-  evaluationTextInfo: {
-    paddingLeft: 10,
-    fontSize: 16,
-    fontWeight: 900,
-  },
-  finishTrainingMain: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  finishTrainingtext: {
-    fontSize: 22,
-    fontWeight: 600,
-    marginBottom: 30,
-  },
-  starContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  postCardContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    padding: 0,
-    marginTop: 10,
-  },
-  cardPost: {
-    width: "100%",
-    padding: 12,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
-  headerPost: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  avatarPost: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 10,
-  },
-  authorInfoPost: {
-    flexDirection: "column",
-  },
-  authorNamePost: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  datePost: {
-    fontSize: 12,
-  },
-  bodyPost: {
-    marginTop: 4,
-    marginBottom: 10,
-  },
-  titlePost: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  descriptionPost: {
-    fontSize: 14,
-    color: "#444",
-    marginBottom: 8,
-  },
-  postImagePost: {
-    width: "100%",
-    height: 300,
-    borderRadius: 8,
-  },
-  adminImagePost: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  cardPubli: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-  },
-  bodyPubli: {
-    marginTop: 5,
-    marginBottom: 15,
-    paddingVertical: 10,
-  },
-  postImagePubli: {
-    width: "100%",
-  },
-  createPostMain: {
-    paddingHorizontal: 10,
-    paddingTop: 2,
-    paddingBottom: 1,
-    width: "100%",
-    gap: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  createPostMainSelected: {
-    paddingHorizontal: 10,
-    paddingTop: 30,
-    paddingBottom: 10,
-    width: "100%",
-    gap: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-    borderBottomWidth: 1,
-  },
-  iconNewPostBox: {
-    width: 38,
-    height: 38,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  postContent: {
-    width: "100%",
-    gap: 15,
-  },
-  shopTrainingCard: {
-    width: "45%",
-    height: 260,
-    borderRadius: 12,
-    overflow: "hidden",
-    elevation: 3,
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  shopTrainingImage: {
-    width: "100%",
-    height: 140,
-  },
-  shopTrainingInfo: {
-    padding: 12,
-  },
-  shopTrainingTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#222",
-    marginBottom: 4,
-  },
-  shopTrainingDescription: {
-    fontSize: 14,
-  },
-  shopTrainingRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  shopTrainingRating: {
-    backgroundColor: "#FFD700",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 16,
-  },
-  shopTrainingRatingText: {
-    fontWeight: "600",
-    color: "#333",
-  },
-  shopTrainingPriceContainer: {
-    alignItems: "flex-end",
-  },
-  shopTrainingOldPrice: {
-    fontSize: 13,
-    textDecorationLine: "line-through",
-  },
-  shopTrainingPrice: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  MFFreePrice: {
-    borderRadius: 15,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    marginRight: -5,
-  },
-});
+export function MFMyFriendRequestCard({
+  themeColors,
+  data,
+  accept,
+  refuse,
+  isLoading,
+}: {
+  themeColors: any;
+  data: any;
+  accept: () => void;
+  refuse: () => void;
+  isLoading?: boolean;
+}) {
+  const client = data?.client_friendship_senderToclient,
+    [isClicked, setIsClicked] = useState<number>(0);
+
+  return (
+    <View>
+      <View
+        style={[
+          styles.cardPost,
+          {
+            backgroundColor: themeColors.backgroundSecondary,
+            borderWidth: 1,
+            borderColor: themeColors.backgroundSecondary,
+            position: "relative",
+          },
+        ]}
+      >
+        {isClicked === 0 ? (
+          <View
+            style={[
+              globalStyles.flexr,
+              { position: "absolute", top: 16, right: 20, padding: 5, gap: 25 },
+            ]}
+          >
+            <Pressable
+              onPress={
+                !isLoading
+                  ? () => {
+                      accept();
+                      setIsClicked(1);
+                    }
+                  : null
+              }
+            >
+              <AntDesign
+                name="checkcircle"
+                size={36}
+                color={themeColors.success}
+              />
+            </Pressable>
+            <Pressable
+              onPress={
+                !isLoading
+                  ? () => {
+                      refuse();
+                      setIsClicked(2);
+                    }
+                  : null
+              }
+            >
+              <AntDesign
+                name="closecircle"
+                size={36}
+                color={themeColors.danger}
+              />
+            </Pressable>
+          </View>
+        ) : (
+          <View
+            style={[
+              globalStyles.flexr,
+              { position: "absolute", top: 16, right: 20, padding: 5, gap: 25 },
+            ]}
+          >
+            <View
+              style={{
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor:
+                  isClicked === 1 ? themeColors.success : themeColors.danger,
+              }}
+            >
+              <Text
+                style={{
+                  color:
+                    isClicked === 1 ? themeColors.success : themeColors.danger,
+                }}
+              >
+                {isClicked === 1 ? "Aceito" : "Rejeitado"}
+              </Text>
+            </View>
+          </View>
+        )}
+        <View style={styles.headerPost}>
+          <Image
+            source={{ uri: client?.photo }}
+            style={[
+              styles.avatarPost,
+              { borderColor: themeColors.text, borderWidth: 3 },
+            ]}
+          />
+
+          <View style={styles.authorInfoPost}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 2,
+              }}
+            >
+              <Text
+                style={[
+                  styles.authorNamePost,
+                  { color: themeColors.text, fontWeight: 800 },
+                ]}
+              >
+                {!!client?.nick ? client?.nick : client?.name}
+              </Text>
+              {client?.userType && client?.userType === 1 && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <Image
+                    source={require("@/assets/images/my-fit/icon-mfc.png")}
+                    style={[
+                      styles.adminImagePost,
+                      { borderColor: themeColors.grey, padding: 2 },
+                    ]}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              {client?.userType &&
+                (client?.userType === 3 || client?.userType === 4) && (
+                  <View
+                    style={[
+                      globalStyles.flexr,
+                      {
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="workspace-premium"
+                      size={18}
+                      color={
+                        client?.userType === 3
+                          ? themeColors.orange
+                          : client?.userType === 4
+                          ? themeColors.primary
+                          : "black"
+                      }
+                    />
+                  </View>
+                )}
+              {client?.cref && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      backgroundColor: themeColors.white,
+                      borderColor: themeColors.grey,
+                      borderWidth: 1,
+                      alignItems: "center",
+                      paddingHorizontal: 7,
+                      borderRadius: 5,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "900",
+                      color: "#105661",
+                    }}
+                  >
+                    Cr
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "900",
+                      color: "#3F9933",
+                    }}
+                  >
+                    ef
+                  </Text>
+                  <FontAwesome
+                    style={{ marginLeft: 5 }}
+                    name="check-circle"
+                    size={14}
+                    color={themeColors.success}
+                  />
+                </View>
+              )}
+            </View>
+            {!!data.createdAt || !!data.updatedAt ? (
+              <Text style={[styles.datePost, { color: themeColors.themeGrey }]}>
+                {data.updatedAt
+                  ? `editado ${formatTimeAgo(data.updatedAt)}`
+                  : formatTimeAgo(data.createdAt)}
+                {"  "}
+                <FontAwesome5
+                  name="clock"
+                  size={12}
+                  color={themeColors.themeGrey}
+                />
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export function MFPersonalRequestCard({
+  themeColors,
+  data,
+  accept,
+  refuse,
+  isLoading,
+}: {
+  themeColors: any;
+  data: any;
+  accept: () => void;
+  refuse: () => void;
+  isLoading?: boolean;
+}) {
+  const client = data?.client_relationship_responsibleToclient,
+    [isClicked, setIsClicked] = useState<number>(0);
+
+  return (
+    <View>
+      <View
+        style={[
+          styles.cardPost,
+          {
+            backgroundColor: themeColors.backgroundSecondary,
+            borderWidth: 1,
+            borderColor: themeColors.backgroundSecondary,
+            position: "relative",
+          },
+        ]}
+      >
+        {isClicked === 0 ? (
+          <View
+            style={[
+              globalStyles.flexr,
+              { position: "absolute", top: 16, right: 20, padding: 5, gap: 25 },
+            ]}
+          >
+            <Pressable
+              onPress={
+                !isLoading
+                  ? () => {
+                      accept();
+                      setIsClicked(1);
+                    }
+                  : null
+              }
+            >
+              <AntDesign
+                name="checkcircle"
+                size={36}
+                color={themeColors.success}
+              />
+            </Pressable>
+            <Pressable
+              onPress={
+                !isLoading
+                  ? () => {
+                      refuse();
+                      setIsClicked(2);
+                    }
+                  : null
+              }
+            >
+              <AntDesign
+                name="closecircle"
+                size={36}
+                color={themeColors.danger}
+              />
+            </Pressable>
+          </View>
+        ) : (
+          <View
+            style={[
+              globalStyles.flexr,
+              { position: "absolute", top: 16, right: 20, padding: 5, gap: 25 },
+            ]}
+          >
+            <View
+              style={{
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor:
+                  isClicked === 1 ? themeColors.success : themeColors.danger,
+              }}
+            >
+              <Text
+                style={{
+                  color:
+                    isClicked === 1 ? themeColors.success : themeColors.danger,
+                }}
+              >
+                {isClicked === 1 ? "Aceito" : "Rejeitado"}
+              </Text>
+            </View>
+          </View>
+        )}
+        <View style={styles.headerPost}>
+          <Image
+            source={{ uri: client?.photo }}
+            style={[
+              styles.avatarPost,
+              { borderColor: themeColors.text, borderWidth: 3 },
+            ]}
+          />
+
+          <View style={styles.authorInfoPost}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 2,
+              }}
+            >
+              <Text
+                style={[
+                  styles.authorNamePost,
+                  { color: themeColors.text, fontWeight: 800 },
+                ]}
+              >
+                {client?.name}
+                <Text style={{ fontSize: 12 }}>
+                  {client.nick ? `  (${client.nick})` : ""}
+                </Text>
+              </Text>
+              {client?.userType && client?.userType === 1 && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <Image
+                    source={require("@/assets/images/my-fit/icon-mfc.png")}
+                    style={[
+                      styles.adminImagePost,
+                      { borderColor: themeColors.grey, padding: 2 },
+                    ]}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+              {client?.userType &&
+                (client?.userType === 3 || client?.userType === 4) && (
+                  <View
+                    style={[
+                      globalStyles.flexr,
+                      {
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="workspace-premium"
+                      size={18}
+                      color={
+                        client?.userType === 3
+                          ? themeColors.orange
+                          : client?.userType === 4
+                          ? themeColors.primary
+                          : "black"
+                      }
+                    />
+                  </View>
+                )}
+              {client?.cref && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      backgroundColor: themeColors.white,
+                      borderColor: themeColors.grey,
+                      borderWidth: 1,
+                      alignItems: "center",
+                      paddingHorizontal: 7,
+                      borderRadius: 5,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "900",
+                      color: "#105661",
+                    }}
+                  >
+                    Cr
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "900",
+                      color: "#3F9933",
+                    }}
+                  >
+                    ef
+                  </Text>
+                  <FontAwesome
+                    style={{ marginLeft: 5 }}
+                    name="check-circle"
+                    size={14}
+                    color={themeColors.success}
+                  />
+                </View>
+              )}
+            </View>
+            {!!data.createdAt || !!data.updatedAt ? (
+              <Text style={[styles.datePost, { color: themeColors.themeGrey }]}>
+                {data.updatedAt
+                  ? `editado ${formatTimeAgo(data.updatedAt)}`
+                  : formatTimeAgo(data.createdAt)}
+                {"  "}
+                <FontAwesome5
+                  name="clock"
+                  size={12}
+                  color={themeColors.themeGrey}
+                />
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export function MFPersonalInfoCard({
+  themeColors,
+  selectedPersonal,
+  onPress,
+  isLoading,
+}: {
+  themeColors: any;
+  selectedPersonal: any;
+  onPress: () => void;
+  isLoading?: boolean;
+}) {
+  return (
+    <View
+      style={[
+        styles.cardInfoPersonal,
+        { backgroundColor: themeColors.secondary },
+      ]}
+    >
+      <Image
+        source={
+          selectedPersonal.client_relationship_responsibleToclient
+            .backgroundImage
+            ? {
+                uri: selectedPersonal.client_relationship_responsibleToclient
+                  .backgroundImage,
+              }
+            : require("@/assets/images/my-fit/mfc-background-default.png")
+        }
+        style={styles.backgroundImageInfoPersonal}
+      />
+      <View style={styles.profileContainerInfoPersonal}>
+        <Image
+          source={{
+            uri: selectedPersonal.client_relationship_responsibleToclient.photo,
+          }}
+          style={[
+            styles.profileImageInfoPersonal,
+            { borderColor: themeColors.secondary },
+          ]}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 2,
+          }}
+        >
+          <Text
+            style={[
+              styles.authorNamePost,
+              { color: themeColors.text, fontWeight: 800 },
+            ]}
+          >
+            {selectedPersonal.client_relationship_responsibleToclient?.name}
+            <Text style={{ fontSize: 12 }}>
+              {selectedPersonal.client_relationship_responsibleToclient.nick
+                ? `  ( ${selectedPersonal.client_relationship_responsibleToclient.nick} )`
+                : ""}
+            </Text>
+          </Text>
+          {selectedPersonal.client_relationship_responsibleToclient?.userType &&
+            selectedPersonal.client_relationship_responsibleToclient
+              ?.userType === 1 && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <Image
+                  source={require("@/assets/images/my-fit/icon-mfc.png")}
+                  style={[
+                    styles.adminImagePost,
+                    { borderColor: themeColors.grey, padding: 2 },
+                  ]}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+          {selectedPersonal.client_relationship_responsibleToclient?.userType &&
+            (selectedPersonal.client_relationship_responsibleToclient
+              ?.userType === 3 ||
+              selectedPersonal.client_relationship_responsibleToclient
+                ?.userType === 4) && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <MaterialIcons
+                  name="workspace-premium"
+                  size={18}
+                  color={
+                    selectedPersonal.client_relationship_responsibleToclient
+                      ?.userType === 3
+                      ? themeColors.orange
+                      : selectedPersonal.client_relationship_responsibleToclient
+                          ?.userType === 4
+                      ? themeColors.primary
+                      : "black"
+                  }
+                />
+              </View>
+            )}
+          {selectedPersonal.client_relationship_responsibleToclient?.cref && (
+            <View
+              style={[
+                globalStyles.flexr,
+                {
+                  backgroundColor: themeColors.white,
+                  borderColor: themeColors.grey,
+                  borderWidth: 1,
+                  alignItems: "center",
+                  paddingHorizontal: 7,
+                  borderRadius: 5,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "900",
+                  color: "#105661",
+                }}
+              >
+                Cr
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "900",
+                  color: "#3F9933",
+                }}
+              >
+                ef
+              </Text>
+              <FontAwesome
+                style={{ marginLeft: 5 }}
+                name="check-circle"
+                size={14}
+                color={themeColors.success}
+              />
+            </View>
+          )}
+        </View>
+        {selectedPersonal.client_relationship_responsibleToclient.instagram && (
+          <Text
+            style={[styles.nickInfoPersonal, { color: themeColors.themeGrey }]}
+          >
+            @
+            {selectedPersonal.client_relationship_responsibleToclient.instagram?.replaceAll(
+              "@",
+              ""
+            )}
+          </Text>
+        )}
+        {selectedPersonal.client_relationship_responsibleToclient
+          .description && (
+          <Text
+            style={[
+              styles.descriptionInfoPersonal,
+              { color: themeColors.text },
+            ]}
+          >
+            ss
+            {
+              selectedPersonal.client_relationship_responsibleToclient
+                .description
+            }
+          </Text>
+        )}
+        {onPress && (
+          <View style={styles.wtsppBoxInfoPersonal}>
+            <Pressable
+              onPress={onPress}
+              style={[
+                styles.wtsppBtnInfoPersonal,
+                {
+                  backgroundColor: themeColors.success,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  color: themeColors.white,
+                  fontSize: 18,
+                  fontWeight: "900",
+                }}
+              >
+                MENSAGEM{"    "}
+                <FontAwesome
+                  name="whatsapp"
+                  size={24}
+                  color={themeColors.white}
+                />
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function MFPersonalEvaluationCard({
+  themeColors,
+  data,
+  onPress,
+  myself,
+}: {
+  themeColors: any;
+  data: any;
+  onPress: () => void;
+  myself: boolean;
+}) {
+  const {
+    evaluation,
+    observations,
+    createdAt,
+    updatedAt,
+    client_personalEvaluations_authorIdToclient,
+  } = data;
+
+  function getStars({ avaliation }: { avaliation: number }) {
+    const stars = [];
+
+    for (let index = 0; index < 5; index++) {
+      const name = index < avaliation ? "star" : "star-o";
+
+      stars.push(
+        <FontAwesome key={index} name={name} size={18} color="#FFD700" />
+      );
+    }
+
+    return stars;
+  }
+
+  return (
+    <View
+      style={[
+        styles.cardPost,
+        {
+          backgroundColor: myself
+            ? themeColors.backgroundSecondary
+            : themeColors.secondary,
+        },
+      ]}
+    >
+      <View style={[styles.headerPost, { position: "relative" }]}>
+        <Image
+          source={{ uri: client_personalEvaluations_authorIdToclient?.photo }}
+          style={[
+            styles.avatarPost,
+            {
+              borderColor: myself ? themeColors.success : themeColors.secondary,
+              borderWidth: 2,
+            },
+          ]}
+        />
+        <View style={styles.authorInfoPost}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 2,
+            }}
+          >
+            <Text
+              style={[
+                styles.authorNamePost,
+                { color: myself ? themeColors.success : themeColors.text },
+              ]}
+            >
+              {myself
+                ? "Você"
+                : client_personalEvaluations_authorIdToclient.nick
+                ? client_personalEvaluations_authorIdToclient.nick
+                : client_personalEvaluations_authorIdToclient.name}
+            </Text>
+            {client_personalEvaluations_authorIdToclient?.userType &&
+              client_personalEvaluations_authorIdToclient?.userType === 1 && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <Image
+                    source={require("@/assets/images/my-fit/icon-mfc.png")}
+                    style={[
+                      styles.adminImagePost,
+                      { borderColor: themeColors.grey, padding: 2 },
+                    ]}
+                    resizeMode="cover"
+                  />
+                </View>
+              )}
+            {client_personalEvaluations_authorIdToclient?.userType &&
+              (client_personalEvaluations_authorIdToclient?.userType === 3 ||
+                client_personalEvaluations_authorIdToclient?.userType ===
+                  4) && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="workspace-premium"
+                    size={18}
+                    color={
+                      client_personalEvaluations_authorIdToclient?.userType ===
+                      3
+                        ? themeColors.orange
+                        : client_personalEvaluations_authorIdToclient?.userType ===
+                          4
+                        ? themeColors.primary
+                        : "black"
+                    }
+                  />
+                </View>
+              )}
+            {client_personalEvaluations_authorIdToclient?.cref && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    backgroundColor: themeColors.white,
+                    borderColor: themeColors.grey,
+                    borderWidth: 1,
+                    alignItems: "center",
+                    paddingHorizontal: 7,
+                    borderRadius: 5,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#105661",
+                  }}
+                >
+                  Cr
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#3F9933",
+                  }}
+                >
+                  ef
+                </Text>
+                <FontAwesome
+                  style={{ marginLeft: 5 }}
+                  name="check-circle"
+                  size={14}
+                  color={themeColors.success}
+                />
+              </View>
+            )}
+          </View>
+          {!!createdAt || !!updatedAt ? (
+            <Text style={[styles.datePost, { color: themeColors.themeGrey }]}>
+              {updatedAt
+                ? `editado ${formatTimeAgo(updatedAt)}`
+                : formatTimeAgo(createdAt)}
+              {"  "}
+              <FontAwesome5
+                name="clock"
+                size={12}
+                color={themeColors.themeGrey}
+              />
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      <View style={styles.bodyPost}>
+        {evaluation && (
+          <Text style={[styles.titlePost, { color: themeColors.text }]}>
+            {getStars({ avaliation: evaluation })}
+          </Text>
+        )}
+        {observations && (
+          <Text style={[styles.descriptionPost, , { color: themeColors.text }]}>
+            {observations}
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function MFClientCard({
+  themeColors,
+  data,
+  friendStatus,
+  onPress,
+}: {
+  themeColors: any;
+  data: any;
+  friendStatus: number;
+  onPress: () => void;
+}) {
+  return (
+    <View
+      style={[
+        styles.cardPost,
+        {
+          backgroundColor: themeColors.secondary,
+          marginBottom: 10,
+          paddingBottom: 0,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.headerPost,
+          { position: "relative", alignItems: "center" },
+        ]}
+      >
+        <MFAddFriendButton
+          title=""
+          themeColors={themeColors}
+          type={friendStatus}
+          onPress={onPress}
+        ></MFAddFriendButton>
+        {data?.photo ? (
+          <Image
+            source={{ uri: data?.photo }}
+            style={styles.avatarClientPost}
+          />
+        ) : (
+          <View style={[globalStyles.flexc, styles.avatarClientPost]}>
+            <FontAwesome name="user-circle" size={55} color="black" />
+          </View>
+        )}
+
+        <View style={styles.authorInfoPost}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <Text style={[styles.authorNamePost, { color: themeColors.text }]}>
+              {data.nick ? data.nick : data.name}
+            </Text>
+            {data?.userType && data?.userType === 1 && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <Image
+                  source={require("@/assets/images/my-fit/icon-mfc.png")}
+                  style={[
+                    styles.adminImagePost,
+                    { borderColor: themeColors.grey, padding: 2 },
+                  ]}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+            {data?.userType &&
+              (data?.userType === 3 || data?.userType === 4) && (
+                <View
+                  style={[
+                    globalStyles.flexr,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="workspace-premium"
+                    size={18}
+                    color={
+                      data?.userType === 3
+                        ? themeColors.orange
+                        : data?.userType === 4
+                        ? themeColors.primary
+                        : "black"
+                    }
+                  />
+                </View>
+              )}
+            {data?.cref && (
+              <View
+                style={[
+                  globalStyles.flexr,
+                  {
+                    backgroundColor: themeColors.white,
+                    borderColor: themeColors.grey,
+                    borderWidth: 1,
+                    alignItems: "center",
+                    paddingHorizontal: 7,
+                    borderRadius: 5,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#105661",
+                  }}
+                >
+                  Cr
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "900",
+                    color: "#3F9933",
+                  }}
+                >
+                  ef
+                </Text>
+                <FontAwesome
+                  style={{ marginLeft: 5 }}
+                  name="check-circle"
+                  size={14}
+                  color={themeColors.success}
+                />
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}

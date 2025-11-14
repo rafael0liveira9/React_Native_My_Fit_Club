@@ -1,5 +1,5 @@
-import NewTrainingScreen from "@/view/stack/newTrainingScreen";
+import { View } from "react-native";
 
 export default function Profile() {
-  return <NewTrainingScreen></NewTrainingScreen>;
+  return <View></View>;
 }

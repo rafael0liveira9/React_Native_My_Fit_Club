@@ -1,74 +1,56 @@
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { useState } from "react";
-import { StyleSheet, TouchableOpacity, View, ViewProps } from "react-native";
-import { MFSelectSort, MFTextInput } from "./inputs";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ViewProps,
+} from "react-native";
 
 interface MFDefaultCardProps extends ViewProps {
   themeColors?: any;
-  search: string;
-  sort: string;
-  setSearch: (value: string) => void;
-  setSort: (value: string) => void;
-  sortOptions: { value: string; label: string; icon?: React.ReactNode }[];
+  search: string | undefined;
+  isLoading: boolean;
+  setSearch: (value: any) => void;
+  onPress: () => void;
+  placeholder?: string;
 }
 
 export default function MFFilterSortBox({
   themeColors,
   search,
-  sort,
   setSearch,
-  setSort,
-  sortOptions,
+  isLoading,
+  onPress,
+  placeholder = "Buscar usuários...",
 }: MFDefaultCardProps) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  function setSortFilter(string: string) {
-    if (string) {
-      setSort(string);
-      setIsOpen(false);
-    }
-  }
-
   return (
     <View style={styles.box}>
-      <View style={styles.search}>
-        <MFTextInput
-          themeColors={themeColors}
-          placeholder="Buscar"
+      <View
+        style={[
+          styles.search,
+          { borderWidth: 1, borderColor: themeColors.text, borderRadius: 8 },
+        ]}
+      >
+        <TextInput
+          style={[styles.input, { color: themeColors?.text || "#333" }]}
           value={search}
           onChangeText={setSearch}
-          icon={
-            <AntDesign
-              name="search1"
-              size={24}
-              color={themeColors.textSecondary}
-            />
-          }
-          error={""}
-        ></MFTextInput>
+          placeholder={placeholder}
+          placeholderTextColor={themeColors?.themeGrey || "#aaa"}
+        />
       </View>
-      <View style={styles.sort}>
-        <TouchableOpacity onPress={() => setIsOpen(!isOpen)}>
-          {isOpen ? (
-            <AntDesign name="menu-unfold" size={30} color={themeColors.text} />
-          ) : (
-            <AntDesign name="menu-fold" size={30} color={themeColors.text} />
-          )}
-        </TouchableOpacity>
-
-        {isOpen && (
-          <View
-            style={[styles.sortOpen, { backgroundColor: themeColors.grey }]}
-          >
-            <MFSelectSort
-              themeColors={themeColors}
-              sort={sort}
-              setSort={setSortFilter}
-              sortOptions={sortOptions}
-            />
-          </View>
+      <Pressable
+        onPress={onPress}
+        style={[styles.btn, { backgroundColor: themeColors.grey }]}
+      >
+        {isLoading ? (
+          <Text>...</Text>
+        ) : (
+          <FontAwesome name="search" size={20} color={themeColors.text} />
         )}
-      </View>
+      </Pressable>
     </View>
   );
 }
@@ -76,34 +58,42 @@ export default function MFFilterSortBox({
 const styles = StyleSheet.create({
   box: {
     width: "100%",
-    display: "flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 30,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
     paddingHorizontal: 20,
     gap: 10,
+    marginBottom: 20,
   },
   search: {
-    width: "80%",
-  },
-  sort: {
-    width: "15%",
-    display: "flex",
+    width: "75%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 17,
-    position: "relative",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
   },
-  sortOpen: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    zIndex: 15,
-    elevation: 6,
-    marginTop: 40,
-    marginRight: 30,
+  input: {
+    flex: 1,
+    fontSize: 16,
+  },
+  btn: {
+    width: "20%",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    height: 43,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  btnText: {
+    fontWeight: "600",
   },
 });

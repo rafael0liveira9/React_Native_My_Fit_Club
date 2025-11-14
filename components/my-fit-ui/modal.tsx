@@ -433,7 +433,6 @@ export function MFCreateSerieModal({
     [addSet, setAddSet] = useState<string>("0"),
     [isometry, setIsometry] = useState<string>(""),
     [amount, setAmount] = useState<string>(""),
-    [repetitions, setRepetitions] = useState<string[]>([]),
     [bisetExerciseId, setBisetExerciseId] = useState<string>(""),
     [muscleBisetSelected, setMuscleBisetSelected] = useState<string>(""),
     [dataBisetFiltered, setDataBisetFiltered] = useState<any>("");
@@ -517,7 +516,7 @@ export function MFCreateSerieModal({
       );
       setDataBisetFiltered(x);
     }
-  }, [muscleSelected, muscleBisetSelected]);
+  }, [muscleSelected, muscleBisetSelected, exercisesList]);
 
   const isometry1 = [
     { label: "-", value: "0" },

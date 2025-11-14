@@ -30,7 +30,7 @@ export default function LoginScreen() {
     [email, setEmail] = useState<string>(""),
     [password, setPassword] = useState<string>("");
 
-  const themeColors = Colors[`${theme}`];
+  const themeColors = Colors[`light`];
 
   async function handleLogin() {
     if (email.length == 0 || password.length == 0) {

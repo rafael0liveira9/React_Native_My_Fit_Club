@@ -35,7 +35,7 @@ export default function RegisterScreen() {
     [password, setPassword] = useState<string>(""),
     [passwordConfirm, setPasswordConfirm] = useState<string>("");
 
-  const themeColors = Colors[`${theme}`];
+  const themeColors = Colors[`light`];
 
   async function handleRegister() {
     if (name.length == 0 || password.length == 0 || email.length == 0) {
